@@ -3,7 +3,11 @@
   "package": "toni.sodiumdynamiclights.mixin",
   "compatibilityLevel": "JAVA_17",
   "minVersion": "0.8",
-  "mixins": [
+  "mixins": [ ],
+  "injectors": {
+    "defaultRequire": 1
+  },
+  "client": [
     "BlockEntityTypeMixin",
     "EntityTypeMixin",
     "LevelMixin",
@@ -17,12 +21,7 @@
     "lightsource.PrimedTntEntityMixin",
     "sodium.ArrayLightDataCacheMixin",
     "sodium.FlatLightPipelineMixin",
-    "sodium.LightDataAccessMixin"
-  ],
-  "injectors": {
-    "defaultRequire": 1
-  },
-  "client": [
+    "sodium.LightDataAccessMixin",
     "ClientLevelMixin",
     "CommonLevelRendererMixin",
     "DebugScreenOverlayMixin",

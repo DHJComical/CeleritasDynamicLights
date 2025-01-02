@@ -33,7 +33,7 @@ public abstract class CommonLevelRendererMixin implements WorldRendererAccessor 
 			cancellable = true
 	)
 	private static void onGetLightmapCoordinates(BlockAndTintGetter level, BlockState state, BlockPos pos, CallbackInfoReturnable<Integer> cir) {
-		if (!level.getBlockState(pos).isSolidRender(level, pos) && SodiumDynamicLights.get().config.getDynamicLightsMode().isEnabled())
+		if (!level.getBlockState(pos).isSolidRender(#if mc < 214 level, pos #endif) && SodiumDynamicLights.get().config.getDynamicLightsMode().isEnabled())
 			cir.setReturnValue(SodiumDynamicLights.get().getLightmapWithDynamicLight(pos, cir.getReturnValue()));
 	}
 }

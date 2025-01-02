@@ -1,1 +1,1 @@
-fix configs not saving when applying in game
+fix crash with mods using the new LambDynLights API

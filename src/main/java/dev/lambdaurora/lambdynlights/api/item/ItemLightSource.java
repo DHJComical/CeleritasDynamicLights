@@ -21,6 +21,10 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.NotNull;
 
+#if mc>=214
+import net.minecraft.core.HolderSet;
+#endif
+
 #if AFTER_21_1
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.world.item.component.BlockItemStateProperties;
@@ -100,7 +104,16 @@ public abstract class ItemLightSource {
 		}
 
 		var affectId = ResourceLocation.tryParse(json.get("item").getAsString());
+
+		#if mc >= 214
+		var ref = BuiltInRegistries.ITEM.get(affectId);
+		if (ref.isEmpty())
+			return Optional.empty();
+
+		var item = ref.get().value();
+		#else
 		var item = BuiltInRegistries.ITEM.get(affectId);
+ 		#endif
 
 		if (item == Items.AIR)
 			return Optional.empty();
@@ -121,7 +134,7 @@ public abstract class ItemLightSource {
 			} else {
 				var blockId = ResourceLocation.tryParse(luminanceStr);
 				if (blockId != null) {
-					var block = BuiltInRegistries.BLOCK.get(blockId);
+					var block = BuiltInRegistries.BLOCK.get(blockId) #if mc >= 214 .get().value() #endif;
 					if (block != Blocks.AIR)
 						return Optional.of(new BlockItemLightSource(id, item, block.defaultBlockState(), waterSensitive));
 				}

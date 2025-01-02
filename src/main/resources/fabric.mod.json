@@ -2,7 +2,7 @@
 	"schemaVersion": 1,
 	"id": "${id}",
 	"name": "${display_name}",
-	"version": "${version}",
+	"version": "${modversion}",
 	"description": "${description}",
 	"authors": [
 		"${author}",
@@ -14,7 +14,7 @@
 	},
 	"license": "${license}",
 	"icon": "assets/${namespace}/textures/mod_logo.png",
-	"environment": "*",
+	"environment": "client",
 	"mixins": [
 		"mixins.${id}.json"
 	],
@@ -28,5 +28,5 @@
 		"minecraft": "${mc}",
 		"fabric-api": "*"
 	},
-	"accessWidener": "${id}-${mcVersion}.accesswidener"
+	"accessWidener": "${id}_${mcVersion}.accesswidener"
 }

@@ -69,7 +69,7 @@ public class DynamicLightsConfig {
 
 		ENTITIES_LIGHT_SOURCE = BUILDER
 				.comment("Enable entities light source.")
-				.define("entities", true);
+				.define("entities", false);
 
 		SELF_LIGHT_SOURCE = BUILDER
 				.comment("Enable first-person player light source.")

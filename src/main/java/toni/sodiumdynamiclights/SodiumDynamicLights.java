@@ -10,6 +10,7 @@
 package toni.sodiumdynamiclights;
 
 import com.google.common.collect.Lists;
+import dev.lambdaurora.lambdynlights.api.item.ItemLightSourceManager;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.PreparableReloadListener;
 import net.minecraft.server.packs.resources.ReloadableResourceManager;
@@ -39,9 +40,10 @@ import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+import java.util.*;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.function.Predicate;
 
@@ -152,9 +154,38 @@ public class SodiumDynamicLights #if FABRIC implements ClientModInitializer #end
 			ForgeConfigRegistry.INSTANCE.register(SodiumDynamicLights.NAMESPACE, ModConfig.Type.CLIENT, DynamicLightsConfig.SPECS);
 			#endif
 
+			#if mc >= 21
+			FabricLoader.getInstance().getEntrypointContainers("sodiumdynamiclights", DynamicLightsInitializer.class)
+					.stream().map(EntrypointContainer::getEntrypoint)
+					.forEach(dynamicLightsInitializer -> { dynamicLightsInitializer.onInitializeDynamicLights(); });
+			#endif
+
 			FabricLoader.getInstance().getEntrypointContainers("dynamiclights", DynamicLightsInitializer.class)
 					.stream().map(EntrypointContainer::getEntrypoint)
-					.forEach(DynamicLightsInitializer::onInitializeDynamicLights);
+					.forEach(dynamicLightsInitializer -> {
+						#if mc >= 211
+						try {
+							Arrays.stream(dynamicLightsInitializer.getClass().getDeclaredMethods())
+								.filter(method -> method.getName().equals("onInitializeDynamicLights") && method.getParameterCount() == 0)
+								.findFirst()
+								.get().invoke(dynamicLightsInitializer);
+						} catch (Exception e) {
+							try {
+								this.log("Mod " + dynamicLightsInitializer.toString() + " failed legacy dynamic lights API call, trying patch...");
+
+								Arrays.stream(dynamicLightsInitializer.getClass().getDeclaredMethods())
+									.filter(method -> method.getName().equals("onInitializeDynamicLights") && method.getParameterCount() == 1)
+									.findFirst()
+									.get().invoke(dynamicLightsInitializer, new ItemLightSourceManager() { });
+							} catch (Exception e2) {
+								this.log("Failed patched method. Dynamic lights integration for this mod will likely not work!");
+								this.log(e2.getMessage());
+							}
+						}
+						#else
+						dynamicLightsInitializer.onInitializeDynamicLights();
+						#endif
+					});
 
 			ResourceManagerHelper.get(PackType.CLIENT_RESOURCES).registerReloadListener(new SimpleSynchronousResourceReloadListener() {
 				@Override
@@ -173,7 +204,6 @@ public class SodiumDynamicLights #if FABRIC implements ClientModInitializer #end
 			});
 
 			WorldRenderEvents.START.register(context -> {
-				Minecraft.getInstance().getProfiler().incrementCounter("dynamic_lighting");
 				this.updateAll(context.worldRenderer());
 			});
 		#endif
