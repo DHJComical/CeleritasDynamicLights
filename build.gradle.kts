@@ -1,133 +1,23 @@
-import toni.blahaj.*
-import toni.blahaj.api.*
-
-val templateSettings = object : BlahajSettings {
-	// -------------------- Dependencies ---------------------- //
-	override val depsHandler: BlahajDependencyHandler get() = object : BlahajDependencyHandler {
-		override fun addGlobal(mod : ModData, deps: DependencyHandler) {
-
-		}
-
-		override fun addFabric(mod : ModData, deps: DependencyHandler) {
-			when (mod.mcVersion) {
-				"1.21.4" -> {
-					deps.modImplementation(modrinth("sodium", "mc1.21.4-0.6.6-fabric"))
-				}
-				"1.21.1" -> {
-					deps.modImplementation(modrinth("sodium", "mc1.21.1-0.6.5-fabric"))
-
-					deps.modImplementation(modrinth("spell-engine", "1.2.1+1.21.1"))
-					deps.modRuntimeOnly(modrinth("cloth-config", "15.0.140+fabric"))
-					deps.modRuntimeOnly(modrinth("spell-power", "1.0.8+1.21.1"))
-					deps.modRuntimeOnly(modrinth("trinkets", "3.10.0"))
-					deps.modRuntimeOnly(modrinth("playeranimator", "2.0.1+1.21.1-fabric"))
-
-					deps.modRuntimeOnly("org.ladysnake.cardinal-components-api:cardinal-components-base:6.1.1")
-					deps.modRuntimeOnly("org.ladysnake.cardinal-components-api:cardinal-components-api:6.1.1")
-
-					deps.runtimeOnly("com.github.ZsoltMolnarrr:TinyConfig:2.3.2")
-				}
-				"1.20.1" -> {
-					deps.modImplementation(modrinth("sodium", "mc1.20.1-0.5.11"))
-				}
-			}
-		}
-
-		override fun addForge(mod : ModData, deps: DependencyHandler) {
-			deps.modImplementation(modrinth("embeddium", "0.3.31+mc1.20.1"))
-			deps.include(deps.implementation("dev.su5ed.sinytra.fabric-api:fabric-api-base:0.4.31+ef105b4977")!!)
-			deps.compileOnly(deps.annotationProcessor("io.github.llamalad7:mixinextras-common:0.4.1")!!)
-			deps.implementation(deps.include("io.github.llamalad7:mixinextras-forge:0.4.1")!!)
-			deps.modRuntimeOnly(modrinth("oculus", "1.20.1-1.7.0"))
-			deps.runtimeOnly("org.anarres:jcpp:1.4.14")
-		}
-
-		override fun addNeo(mod : ModData, deps: DependencyHandler) {
-			when (mod.mcVersion)
-			{
-				"1.21.4" -> {
-					deps.implementation(modrinth("sodium", "mc1.21.4-0.6.6-neoforge"))
-
-					deps.compileOnly("org.sinytra.forgified-fabric-api:fabric-api-base:0.4.42+d1308ded19")
-					deps.compileOnly("org.sinytra.forgified-fabric-api:fabric-renderer-api-v1:5.0.0+babc52e504")
-					deps.compileOnly("org.sinytra.forgified-fabric-api:fabric-rendering-data-attachment-v1:0.3.48+73761d2e19")
-					deps.compileOnly("org.sinytra.forgified-fabric-api:fabric-block-view-api-v2:1.0.10+9afaaf8c19")
-				}
-				"1.21.1" -> {
-					deps.implementation(modrinth("sodium", "mc1.21.1-0.6.0-neoforge"))
-
-					deps.compileOnly("org.sinytra.forgified-fabric-api:fabric-api-base:0.4.42+d1308dedd1")
-					deps.compileOnly("org.sinytra.forgified-fabric-api:fabric-renderer-api-v1:3.4.0+acb05a39d1")
-				}
-			}
-		}
-	}
-
-	// ---------- Curseforge/Modrinth Configuration ----------- //
-	// For configuring the dependecies that will show up on your mod page.
-	override val publishHandler: BlahajPublishDependencyHandler get() = object : BlahajPublishDependencyHandler {
-		override fun addShared(mod : ModData, deps: DependencyContainer) {
-			deps.requires("sodium-options-api")
-
-			if (mod.isFabric) {
-				deps.requires("fabric-api")
-			}
-
-			if (!mod.isForge)
-				deps.requires("sodium")
-		}
-
-		override fun addCurseForge(mod : ModData, deps: DependencyContainer) {
-
-		}
-
-		override fun addModrinth(mod : ModData, deps: DependencyContainer) {
-
-		}
-	}
-}
+import toni.blahaj.setup.annotationProcessor
+import toni.blahaj.setup.compileOnly
+import toni.blahaj.setup.implementation
+import toni.blahaj.setup.include
 
 plugins {
-	`maven-publish`
-	application
-	id("toni.blahaj") version "1.0.15"
-	kotlin("jvm")
-	kotlin("plugin.serialization")
-	id("dev.kikugie.j52j") version "1.0"
-	id("dev.architectury.loom")
-	id("me.modmuss50.mod-publish-plugin")
-	id("systems.manifold.manifold-gradle-plugin")
+	id("toni.blahaj")
 }
 
 blahaj {
-	sc = stonecutter
-	settings = templateSettings
-	init()
-}
+	config {}
+	setup {
+		deps.implementation(modrinth("sodium", "mc1.21.5-0.6.13-neoforge"))
 
-// Dependencies
-repositories {
-	maven("https://maven.pkg.github.com/ims212/ForgifiedFabricAPI") {
-		credentials {
-			username = "IMS212"
-			// Read only token
-			password = "ghp_" + "DEuGv0Z56vnSOYKLCXdsS9svK4nb9K39C1Hn"
-		}
+		deps.compileOnly(deps.annotationProcessor("com.github.bawnorton.mixinsquared:mixinsquared-common:0.2.0-beta.6")!!)
+		deps.include(deps.implementation("com.github.bawnorton.mixinsquared:mixinsquared-neoforge:0.2.0-beta.6")!!)!!
+
+		deps.compileOnly("org.sinytra.forgified-fabric-api:fabric-api-base:0.4.42+d1308ded19")
+		deps.compileOnly("net.caffeinemc:fabric-renderer-api-v1:6.0.0")
+		deps.compileOnly("org.sinytra.forgified-fabric-api:fabric-rendering-data-attachment-v1:0.3.48+73761d2e19")
+		deps.compileOnly("org.sinytra.forgified-fabric-api:fabric-block-view-api-v2:1.0.10+9afaaf8c19")
 	}
-	maven("https://www.cursemaven.com")
-	maven("https://api.modrinth.com/maven")
-	maven("https://thedarkcolour.github.io/KotlinForForge/")
-	maven("https://maven.kikugie.dev/releases")
-	maven("https://maven.txni.dev/releases")
-	maven("https://jitpack.io")
-	maven("https://maven.neoforged.net/releases/")
-	maven("https://maven.terraformersmc.com/releases/")
-	maven("https://raw.githubusercontent.com/Fuzss/modresources/main/maven/")
-	maven("https://maven.parchmentmc.org")
-	maven("https://maven.su5ed.dev/releases")
-	maven("https://maven.su5ed.dev/releases")
-	maven("https://maven.fabricmc.net")
-	maven("https://maven.shedaniel.me/")
-	maven("https://maven.fallenbreath.me/releases")
-	maven("https://maven.ladysnake.org/releases")
 }

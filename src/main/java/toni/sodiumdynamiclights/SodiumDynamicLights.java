@@ -49,6 +49,10 @@ import java.util.function.Predicate;
 
 import net.minecraft.server.packs.PackType;
 
+#if mc >= 215
+import net.minecraft.world.entity.EquipmentSlot;
+#endif
+
 #if AFTER_21_1
 import net.neoforged.fml.config.ModConfig;
 #endif
@@ -61,9 +65,13 @@ import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.loader.api.entrypoint.EntrypointContainer;
 
-	#if AFTER_21_1
+	#if mc >= 215
+	import fuzs.forgeconfigapiport.fabric.api.v5.ConfigRegistry;
+	#elif mc >= 211
     import fuzs.forgeconfigapiport.fabric.api.neoforge.v4.NeoForgeConfigRegistry;
-    import fuzs.forgeconfigapiport.fabric.api.neoforge.v4.client.ConfigScreenFactoryRegistry;
+	#endif
+
+	#if AFTER_21_1
     import net.neoforged.neoforge.client.gui.ConfigurationScreen;
 	import net.neoforged.fml.config.ModConfig;
     import net.neoforged.neoforge.common.ModConfigSpec;
@@ -81,9 +89,14 @@ import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents;
 #endif
 
 #if NEO
+#if mc >= 215
+import net.neoforged.neoforge.event.AddServerReloadListenersEvent;
+#else
+import net.neoforged.neoforge.event.AddReloadListenerEvent;
+#endif
+
 import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
 import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.neoforge.event.AddReloadListenerEvent;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModContainer;
@@ -148,7 +161,9 @@ public class SodiumDynamicLights #if FABRIC implements ClientModInitializer #end
 				DynamicLightsConfig.SPECS.save();
 			});
 
-			#if AFTER_21_1
+			#if mc >= 215
+			ConfigRegistry.INSTANCE.register(SodiumDynamicLights.NAMESPACE, ModConfig.Type.CLIENT, DynamicLightsConfig.SPECS);
+			#elif AFTER_21_1
 			NeoForgeConfigRegistry.INSTANCE.register(SodiumDynamicLights.NAMESPACE, ModConfig.Type.CLIENT, DynamicLightsConfig.SPECS);
 			#else
 			ForgeConfigRegistry.INSTANCE.register(SodiumDynamicLights.NAMESPACE, ModConfig.Type.CLIENT, DynamicLightsConfig.SPECS);
@@ -242,15 +257,26 @@ public class SodiumDynamicLights #if FABRIC implements ClientModInitializer #end
 		}
 
 		private static void registerClient(PreparableReloadListener listener) {
+			#if mc < 215
 			((ReloadableResourceManager) Minecraft.getInstance().getResourceManager()).registerReloadListener(listener);
+			#endif
 		}
 
+		#if mc >= 215
+		@SubscribeEvent
+		public static void addReloadListeners(AddServerReloadListenersEvent event) {
+			for (PreparableReloadListener listener : serverDataReloadListeners) {
+				event.addListener(ResourceLocation.fromNamespaceAndPath(NAMESPACE, "data"), listener);
+			}
+		}
+		#else
 		@SubscribeEvent
 		public static void addReloadListeners(AddReloadListenerEvent event) {
 			for (PreparableReloadListener listener : serverDataReloadListeners) {
 				event.addListener(listener);
 			}
 		}
+		#endif
     #endif
 
 	/**
@@ -611,10 +637,20 @@ public class SodiumDynamicLights #if FABRIC implements ClientModInitializer #end
 		boolean submergedInFluid = isEyeSubmergedInFluid(entity);
 		int luminance = 0;
 
+		#if mc >= 215
+		for (var equipmentSlot : EquipmentSlot.VALUES) {
+			var equipped = entity.getItemBySlot(equipmentSlot);
+			if (!equipped.isEmpty())
+				luminance = Math.max(luminance, SodiumDynamicLights.getLuminanceFromItemStack(equipped, submergedInFluid));
+		}
+		#else
 		for (var equipped : entity.getAllSlots()) {
 			if (!equipped.isEmpty())
 				luminance = Math.max(luminance, SodiumDynamicLights.getLuminanceFromItemStack(equipped, submergedInFluid));
 		}
+		#endif
+
+
 
 		return luminance;
 	}
