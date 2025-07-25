@@ -9,8 +9,8 @@
 
 package toni.sodiumdynamiclights;
 
-import net.minecraft.ChatFormatting;
-import net.minecraft.network.chat.Component;
+import net.minecraft.util.text.TextComponentString;
+import net.minecraft.util.text.TextFormatting;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Arrays;
@@ -24,17 +24,18 @@ import java.util.Optional;
  * @since 1.0.0
  */
 public enum DynamicLightsMode {
-	OFF(0, ChatFormatting.RED, "OFF"),
-	SLOW(500, ChatFormatting.YELLOW, "SLOW"),
-	FAST(250, ChatFormatting.GOLD, "FAST"),
-	REALTIME(0, ChatFormatting.GREEN, "REALTIME");
+	OFF(0, TextFormatting.RED, "OFF"),
+	SLOW(500, TextFormatting.YELLOW, "SLOW"),
+	FAST(250, TextFormatting.GOLD, "FAST"),
+	REALTIME(0, TextFormatting.GREEN, "REALTIME");
 
 	private final int delay;
-	private final Component translatedText;
+	private final TextComponentString translatedText;
 
-	DynamicLightsMode(int delay, @NotNull ChatFormatting formatting, @NotNull String translatedText) {
+	DynamicLightsMode(int delay, @NotNull TextFormatting formatting, @NotNull String translatedText) {
 		this.delay = delay;
-		this.translatedText = Component.literal(translatedText).copy().withStyle(formatting);
+		this.translatedText = new TextComponentString(translatedText);
+		this.translatedText.getStyle().setColor(formatting);
 	}
 
 	/**
@@ -81,7 +82,7 @@ public enum DynamicLightsMode {
 	 *
 	 * @return the translated text of the dynamic lights mode
 	 */
-	public @NotNull Component getTranslatedText() {
+	public @NotNull TextComponentString getTranslatedText() {
 		return this.translatedText;
 	}
 

@@ -9,16 +9,23 @@
 
 package dev.lambdaurora.lambdynlights.api;
 
-import net.minecraft.util.Mth;
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.item.EntityItem;
+import net.minecraft.entity.item.EntityItemFrame;
+import net.minecraft.entity.monster.EntityBlaze;
+import net.minecraft.entity.monster.EntityCreeper;
+import net.minecraft.entity.monster.EntityEnderman;
+import net.minecraft.entity.monster.EntityMagmaCube;
+import net.minecraft.entity.projectile.EntitySpectralArrow;
+import net.minecraft.tileentity.TileEntity;
+import net.minecraft.util.math.BlockPos;
+import toni.sodiumdynamiclights.config.DynamicLightsConfig;
 import toni.sodiumdynamiclights.SodiumDynamicLights;
 import toni.sodiumdynamiclights.accessor.DynamicLightHandlerHolder;
 import net.minecraft.client.Minecraft;
-import net.minecraft.core.BlockPos; 
-import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraft.world.level.block.entity.BlockEntityType;
-import org.jetbrains.annotations.Nullable;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * @author LambdAurora
@@ -30,90 +37,128 @@ public final class DynamicLightHandlers {
 		throw new UnsupportedOperationException("DynamicLightHandlers only contains static definitions.");
 	}
 
+	private static final Map<Class<? extends Entity>, DynamicLightHandler<?>> ENTITY_LIGHT_HANDLERS = new HashMap<>();
+	private static final Map<Class<? extends TileEntity>, DynamicLightHandler<?>> TILE_ENTITY_LIGHT_HANDLERS = new HashMap<>();
+
+
 	/**
 	 * Registers the default handlers.
 	 */
+
 	public static void registerDefaultHandlers() {
-		registerDynamicLightHandler(EntityType.BLAZE, DynamicLightHandler.makeHandler(blaze -> 10, blaze -> true));
-		registerDynamicLightHandler(EntityType.CREEPER, DynamicLightHandler.makeCreeperEntityHandler(null));
-		registerDynamicLightHandler(EntityType.ENDERMAN, entity -> {
+		registerEntityDynamicLightHandler(EntityBlaze.class, DynamicLightHandler.makeHandler(blaze -> 10, blaze -> true));
+		registerEntityDynamicLightHandler(EntityCreeper.class, DynamicLightHandler.makeCreeperEntityHandler(null));
+		registerEntityDynamicLightHandler(EntityEnderman.class, entity -> {
 			int luminance = 0;
-			if (entity.getCarriedBlock() != null)
-				luminance = entity.getCarriedBlock().getLightEmission();
+			if (entity.getHeldBlockState() != null)
+				luminance = entity.getHeldBlockState().getLightValue();
 			return luminance;
 		});
-		registerDynamicLightHandler(EntityType.ITEM,
-				entity -> SodiumDynamicLights.getLuminanceFromItemStack(entity.getItem(), entity.isUnderWater()));
-		registerDynamicLightHandler(EntityType.ITEM_FRAME, entity -> {
-			var world = entity.level();
-			return SodiumDynamicLights.getLuminanceFromItemStack(entity.getItem(), !world.getFluidState(entity.blockPosition()).isEmpty());
+		registerEntityDynamicLightHandler(EntityItem.class, entity -> SodiumDynamicLights.getLuminanceFromItemStack(entity.getItem(), entity.isOverWater()));
+		//TODO Item frame not working
+		registerEntityDynamicLightHandler(EntityItemFrame.class, entity -> {
+            BlockPos pos = new BlockPos(entity.posX, entity.posY + entity.getEyeHeight(), entity.posZ);
+			boolean isSubmerged = entity.world.getBlockState(pos).getMaterial().isLiquid();
+			return SodiumDynamicLights.getLuminanceFromItemStack(entity.getDisplayedItem(), isSubmerged);
 		});
-		registerDynamicLightHandler(EntityType.GLOW_ITEM_FRAME, entity -> {
-			var world = entity.level();
-			return Math.max(14, SodiumDynamicLights.getLuminanceFromItemStack(entity.getItem(),
-					!world.getFluidState(entity.blockPosition()).isEmpty()));
-		});
-		registerDynamicLightHandler(EntityType.MAGMA_CUBE, entity -> (entity.squish > 0.6) ? 11 : 8);
-		registerDynamicLightHandler(EntityType.SPECTRAL_ARROW, entity -> 8);
-		registerDynamicLightHandler(EntityType.GLOW_SQUID,
-				entity -> (int) Mth.clampedLerp(0.f, 12.f, 1.f - entity.getDarkTicksRemaining() / 10.f)
-		);
+		registerEntityDynamicLightHandler(EntityMagmaCube.class, entity -> (entity.squishFactor > 0.6) ? 11 : 8);
+		registerEntityDynamicLightHandler(EntitySpectralArrow.class, entity -> 8);
 	}
 
 	/**
 	 * Registers an entity dynamic light handler.
 	 *
-	 * @param type the entity type
+	 * @param entityClass the entity type
 	 * @param handler the dynamic light handler
 	 * @param <T> the type of the entity
 	 */
-	@SuppressWarnings("unchecked")
-	public static <T extends Entity> void registerDynamicLightHandler(EntityType<T> type, DynamicLightHandler<T> handler) {
-		register((DynamicLightHandlerHolder<T>) type, handler);
+	public static <T extends Entity> void registerEntityDynamicLightHandler(Class<T> entityClass, DynamicLightHandler<T> handler) {
+		DynamicLightHandler<?> existingHandler = ENTITY_LIGHT_HANDLERS.get(entityClass);
+
+		if (existingHandler != null) {
+			DynamicLightHandler<T> combinedHandler = entity -> {
+				int maxLuminance = Math.max(
+						((DynamicLightHandler<T>) existingHandler).getLuminance(entity),
+						handler.getLuminance(entity)
+				);
+				if (maxLuminance >= 15) {
+					maxLuminance = 14;
+				}
+				return maxLuminance;
+			};
+			ENTITY_LIGHT_HANDLERS.put(entityClass, combinedHandler);
+		} else {
+			DynamicLightHandler<T> clampedHandler = entity -> {
+				int luminance = handler.getLuminance(entity);
+				if (luminance >= 15) {
+					luminance = 14;
+				}
+				return luminance;
+			};
+			ENTITY_LIGHT_HANDLERS.put(entityClass, clampedHandler);
+		}
 	}
+
 
 	/**
 	 * Registers a block entity dynamic light handler.
 	 *
-	 * @param type the block entity type
+	 * @param tileEntityClass the block entity type
 	 * @param handler the dynamic light handler
 	 * @param <T> the type of the block entity
 	 */
 	@SuppressWarnings("unchecked")
-	public static <T extends BlockEntity> void registerDynamicLightHandler(BlockEntityType<T> type, DynamicLightHandler<T> handler) {
-		register((DynamicLightHandlerHolder<T>) type, handler);
-	}
+	public static <T extends TileEntity> void registerTileEntityDynamicLightHandler(Class<T> tileEntityClass, DynamicLightHandler<T> handler) {
+		DynamicLightHandler<?> existingHandler = TILE_ENTITY_LIGHT_HANDLERS.get(tileEntityClass);
 
-	private static <T> void register(DynamicLightHandlerHolder<T> holder, DynamicLightHandler<T> handler) {
-		var registeredHandler = holder.sodiumdynamiclights$getDynamicLightHandler();
-		if (registeredHandler != null) {
-			DynamicLightHandler<T> newHandler = entity -> Math.max(registeredHandler.getLuminance(entity), handler.getLuminance(entity));
-			holder.sodiumdynamiclights$setDynamicLightHandler(newHandler);
+		if (existingHandler != null) {
+			DynamicLightHandler<T> combinedHandler = entity -> {
+				int maxLuminance = Math.max(
+						((DynamicLightHandler<T>) existingHandler).getLuminance(entity),
+						handler.getLuminance(entity)
+				);
+				if (maxLuminance >= 15) {
+					maxLuminance = 14;
+				}
+				return maxLuminance;
+			};
+			TILE_ENTITY_LIGHT_HANDLERS.put(tileEntityClass, combinedHandler);
 		} else {
-			holder.sodiumdynamiclights$setDynamicLightHandler(handler);
+			DynamicLightHandler<T> clampedHandler = entity -> {
+				int luminance = handler.getLuminance(entity);
+				if (luminance >= 15) {
+					luminance = 14;
+				}
+				return luminance;
+			};
+			TILE_ENTITY_LIGHT_HANDLERS.put(tileEntityClass, clampedHandler);
 		}
 	}
 
 	/**
 	 * Returns the registered dynamic light handler of the specified entity.
 	 *
-	 * @param type the entity type
+	 * @param entity the entity type
 	 * @param <T> the type of the entity
 	 * @return the registered dynamic light handler
 	 */
-	public static <T extends Entity> @Nullable DynamicLightHandler<T> getDynamicLightHandler(EntityType<T> type) {
-		return DynamicLightHandlerHolder.cast(type).sodiumdynamiclights$getDynamicLightHandler();
+	public static <T extends Entity> DynamicLightHandler<T> getDynamicLightHandler(T entity) {
+		Class<?> clazz = entity.getClass();
+		DynamicLightHandler<?> handler = ENTITY_LIGHT_HANDLERS.get(clazz);
+		return (DynamicLightHandler<T>) handler;
 	}
 
 	/**
 	 * Returns the registered dynamic light handler of the specified block entity.
 	 *
-	 * @param type the block entity type
+	 * @param tileEntity the block entity type
 	 * @param <T> the type of the block entity
 	 * @return the registered dynamic light handler
 	 */
-	public static <T extends BlockEntity> @Nullable DynamicLightHandler<T> getDynamicLightHandler(BlockEntityType<T> type) {
-		return DynamicLightHandlerHolder.cast(type).sodiumdynamiclights$getDynamicLightHandler();
+	public static <T extends TileEntity> DynamicLightHandler<T> getDynamicLightHandler(T tileEntity) {
+		Class<?> clazz = tileEntity.getClass();
+		DynamicLightHandler<?> handler = TILE_ENTITY_LIGHT_HANDLERS.get(clazz);
+		return (DynamicLightHandler<T>) handler;
 	}
 
 	/**
@@ -123,11 +168,17 @@ public final class DynamicLightHandlers {
 	 * @param <T> the type of the entity
 	 * @return {@code true} if the entity can light up, otherwise {@code false}
 	 */
-	public static <T extends Entity> boolean canLightUp(T entity) {
-		if (entity == Minecraft.getInstance().player && !SodiumDynamicLights.get().config.getSelfLightSource().get())
+	public static <T extends Entity> boolean canEntityLightUp(T entity) {
+		if (entity == Minecraft.getMinecraft().player && !DynamicLightsConfig.selfLightSource)
 			return false;
 
-		var setting = DynamicLightHandlerHolder.cast(entity.getType()).sodiumdynamiclights$getSetting();
+		DynamicLightHandlerHolder<T> handler = DynamicLightHandlerHolder.get((Class<T>) entity.getClass());
+
+		if (handler == null) {
+			return true;
+		}
+
+		boolean setting = handler.sodiumdynamiclights$getSetting();
 		return !setting;
 	}
 
@@ -138,8 +189,15 @@ public final class DynamicLightHandlers {
 	 * @param <T> the type of the block entity
 	 * @return {@code true} if the block entity can light up, otherwise {@code false}
 	 */
-	public static <T extends BlockEntity> boolean canLightUp(T entity) {
-		var setting = DynamicLightHandlerHolder.cast(entity.getType()).sodiumdynamiclights$getSetting();
+	public static <T extends TileEntity> boolean canTileEntityLightUp(T entity) {
+		DynamicLightHandlerHolder<T> handler = DynamicLightHandlerHolder.get((Class<T>) entity.getClass());
+
+		if (handler == null) {
+			return true;
+		}
+
+		boolean setting = handler.sodiumdynamiclights$getSetting();
+
 		return !setting;
 	}
 
@@ -150,20 +208,23 @@ public final class DynamicLightHandlers {
 	 * @param <T> the type of the entity
 	 * @return the luminance
 	 */
-	@SuppressWarnings("unchecked")
 	public static <T extends Entity> int getLuminanceFrom(T entity) {
-		if (!SodiumDynamicLights.get().config.getEntitiesLightSource().get())
+		if (!DynamicLightsConfig.entitiesLightSource)
 			return 0;
-		if (entity == Minecraft.getInstance().player && !SodiumDynamicLights.get().config.getSelfLightSource().get())
+
+		if (entity == Minecraft.getMinecraft().player && !DynamicLightsConfig.selfLightSource)
 			return 0;
-		var handler = (DynamicLightHandler<T>) getDynamicLightHandler(entity.getType());
+
+		var handler = (DynamicLightHandler<T>) getDynamicLightHandler(entity);
 		if (handler == null)
 			return 0;
-		if (!canLightUp(entity))
+
+		if (!canEntityLightUp(entity))
 			return 0;
-		if (handler.isWaterSensitive(entity)
-				&& !entity.level().getFluidState(BlockPos.containing(entity.getX(), entity.getEyeY(), entity.getZ())).isEmpty())
+
+		if (handler.isWaterSensitive(entity) && entity.getEntityWorld() != null && (entity.isInWater() || entity.isInLava()))
 			return 0;
+
 		return handler.getLuminance(entity);
 	}
 
@@ -174,17 +235,20 @@ public final class DynamicLightHandlers {
 	 * @param <T> the type of the block entity
 	 * @return the luminance
 	 */
-	@SuppressWarnings("unchecked")
-	public static <T extends BlockEntity> int getLuminanceFrom(T entity) {
-		if (!SodiumDynamicLights.get().config.getBlockEntitiesLightSource().get())
+	public static <T extends TileEntity> int getLuminanceFrom(T entity) {
+		if (!DynamicLightsConfig.blockEntitiesLightSource)
 			return 0;
-		DynamicLightHandler<T> handler = (DynamicLightHandler<T>) getDynamicLightHandler(entity.getType());
+
+		DynamicLightHandler<T> handler = (DynamicLightHandler<T>) getDynamicLightHandler(entity);
 		if (handler == null)
 			return 0;
-		if (!canLightUp(entity))
+
+		if (!canTileEntityLightUp(entity))
 			return 0;
-		if (handler.isWaterSensitive(entity) && entity.getLevel() != null && !entity.getLevel().getFluidState(entity.getBlockPos()).isEmpty())
+
+		if (handler.isWaterSensitive(entity) && entity.getWorld() != null && entity.getWorld().getBlockState(entity.getPos()).getMaterial().isLiquid())
 			return 0;
+
 		return handler.getLuminance(entity);
 	}
 }

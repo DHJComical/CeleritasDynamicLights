@@ -9,8 +9,9 @@
 
 package toni.sodiumdynamiclights.util;
 
+import net.minecraft.util.math.BlockPos;
+import toni.sodiumdynamiclights.config.DynamicLightsConfig;
 import toni.sodiumdynamiclights.SodiumDynamicLights;
-import net.minecraft.core.BlockPos;
 import org.jetbrains.annotations.ApiStatus;
 
 @ApiStatus.Internal
@@ -21,7 +22,7 @@ public interface SodiumDynamicLightHandler {
 	ThreadLocal<BlockPos.MutableBlockPos> POS = ThreadLocal.withInitial(BlockPos.MutableBlockPos::new);
 
 	static int getLightmap(BlockPos pos, int word, int lightmap) {
-		if (!SodiumDynamicLights.get().config.getDynamicLightsMode().isEnabled())
+		if (!DynamicLightsConfig.dynamicLightsMode.isEnabled())
 			return lightmap;
 
 		// Equivalent to world.getBlockState(pos).isOpaqueFullCube(world, pos)

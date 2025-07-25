@@ -9,10 +9,11 @@
 
 package toni.sodiumdynamiclights;
 
-import net.minecraft.client.renderer.LevelRenderer;
-import net.minecraft.world.level.Level;
+import net.minecraft.client.renderer.RenderGlobal;
+import net.minecraft.world.World;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
+import toni.sodiumdynamiclights.config.DynamicLightsConfig;
 
 /**
  * Represents a dynamic light source.
@@ -48,7 +49,7 @@ public interface DynamicLightSource {
 	 *
 	 * @return the world instance
 	 */
-	Level sdl$getDynamicLightLevel();
+	World sdl$getDynamicLightLevel();
 
 	/**
 	 * Returns whether the dynamic light is enabled or not.
@@ -56,7 +57,7 @@ public interface DynamicLightSource {
 	 * @return {@code true} if the dynamic light is enabled, else {@code false}
 	 */
 	default boolean sdl$isDynamicLightEnabled() {
-		return SodiumDynamicLights.get().config.getDynamicLightsMode().isEnabled() && SodiumDynamicLights.get().containsLightSource(this);
+		return DynamicLightsConfig.dynamicLightsMode.isEnabled() && SodiumDynamicLights.get().containsLightSource(this);
 	}
 
 	/**
@@ -97,7 +98,7 @@ public interface DynamicLightSource {
 	 */
 	boolean sdl$shouldUpdateDynamicLight();
 
-	boolean sodiumdynamiclights$updateDynamicLight(@NotNull LevelRenderer renderer);
+	boolean sodiumdynamiclights$updateDynamicLight(@NotNull RenderGlobal renderer);
 
-	void sodiumdynamiclights$scheduleTrackedChunksRebuild(@NotNull LevelRenderer renderer);
+	void sodiumdynamiclights$scheduleTrackedChunksRebuild(@NotNull RenderGlobal renderer);
 }

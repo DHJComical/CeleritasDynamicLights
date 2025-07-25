@@ -9,8 +9,8 @@
 
 package toni.sodiumdynamiclights;
 
-import net.minecraft.ChatFormatting;
-import net.minecraft.network.chat.Component;
+import net.minecraft.util.text.TextComponentString;
+import net.minecraft.util.text.TextFormatting;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Arrays;
@@ -24,14 +24,15 @@ import java.util.Optional;
  * @since 1.2.1
  */
 public enum ExplosiveLightingMode {
-	OFF(ChatFormatting.RED, "OFF"),
-	SIMPLE(ChatFormatting.YELLOW, "SIMPLE"),
-	FANCY(ChatFormatting.GREEN, "FANCY");
+	OFF(TextFormatting.RED, "OFF"),
+	SIMPLE(TextFormatting.YELLOW, "SIMPLE"),
+	FANCY(TextFormatting.GREEN, "FANCY");
 
-	private final Component translatedText;
+	private final TextComponentString translatedText;
 
-	ExplosiveLightingMode(@NotNull ChatFormatting formatting, @NotNull String translatedText) {
-		this.translatedText = Component.literal(translatedText).copy().withStyle(formatting);
+	ExplosiveLightingMode(@NotNull TextFormatting formatting, @NotNull String translatedText) {
+		this.translatedText = new TextComponentString(translatedText);
+		this.translatedText.getStyle().setColor(formatting);
 	}
 
 	/**
@@ -60,7 +61,7 @@ public enum ExplosiveLightingMode {
 	 *
 	 * @return the translated text of the explosives dynamic lighting mode
 	 */
-	public @NotNull Component getTranslatedText() {
+	public @NotNull TextComponentString getTranslatedText() {
 		return this.translatedText;
 	}
 

@@ -17,13 +17,5 @@ package toni.sodiumdynamiclights.accessor;
  * @since 1.0.0
  */
 public interface WorldRendererAccessor {
-	/**
-	 * Schedules a chunk rebuild.
-	 *
-	 * @param x X coordinates of the chunk
-	 * @param y Y coordinates of the chunk
-	 * @param z Z coordinates of the chunk
-	 * @param important {@code true} if important, else {@code false}
-	 */
-	void sodiumdynamiclights$scheduleChunkRebuild(int x, int y, int z, boolean important);
+	void sodiumdynamiclights$scheduleChunkRebuild(int minX, int minY, int minZ, int maxX, int maxY, int maxZ, boolean updateImmediately);
 }

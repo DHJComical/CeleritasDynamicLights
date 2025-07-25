@@ -9,14 +9,13 @@
 
 package toni.sodiumdynamiclights.accessor;
 
-import net.minecraft.network.chat.Component;
 import dev.lambdaurora.lambdynlights.api.DynamicLightHandler;
-import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.util.text.TextComponentString;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
+
+import java.util.HashMap;
+import java.util.Map;
 
 @ApiStatus.Internal
 @ApiStatus.NonExtendable
@@ -27,15 +26,17 @@ public interface DynamicLightHandlerHolder<T> {
 
 	boolean sodiumdynamiclights$getSetting();
 
-	Component sodiumdynamiclights$getName();
+	TextComponentString sodiumdynamiclights$getName();
+
+	Map<Class<?>, DynamicLightHandlerHolder<?>> REGISTRY = new HashMap<>();
 
 	@SuppressWarnings("unchecked")
-	static <T extends Entity> DynamicLightHandlerHolder<T> cast(EntityType<T> entityType) {
-		return (DynamicLightHandlerHolder<T>) entityType;
+	static <T> void register(Class<T> clazz, DynamicLightHandlerHolder<T> handler) {
+		REGISTRY.put(clazz, handler);
 	}
 
 	@SuppressWarnings("unchecked")
-	static <T extends BlockEntity> DynamicLightHandlerHolder<T> cast(BlockEntityType<T> entityType) {
-		return (DynamicLightHandlerHolder<T>) entityType;
+	static <T> @Nullable DynamicLightHandlerHolder<T> get(Class<T> clazz) {
+		return (DynamicLightHandlerHolder<T>) REGISTRY.get(clazz);
 	}
 }

@@ -9,16 +9,18 @@
 
 package dev.lambdaurora.lambdynlights.api.item;
 
+import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.packs.resources.Resource;
-import net.minecraft.server.packs.resources.ResourceManager;
+import net.minecraft.block.Block;
+import net.minecraft.block.BlockTorch;
+import net.minecraft.client.resources.IResource;
+import net.minecraft.client.resources.IResourceManager;
+import net.minecraft.item.Item;
+import net.minecraft.item.ItemBlock;
+import net.minecraft.item.ItemStack;
+import net.minecraft.util.ResourceLocation;
 import toni.sodiumdynamiclights.SodiumDynamicLights;
 import it.unimi.dsi.fastutil.objects.Reference2ObjectOpenHashMap;
-import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.world.item.BlockItem;
-import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ItemStack;
 
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -32,90 +34,114 @@ import java.util.Map;
  * @since 1.3.0
  */
 public final class ItemLightSources {
-	private static final Map<Item, ItemLightSource> ITEM_LIGHT_SOURCES = new Reference2ObjectOpenHashMap<>();
-	private static final Map<Item, ItemLightSource> STATIC_ITEM_LIGHT_SOURCES = new Reference2ObjectOpenHashMap<>();
+    private static final Map<Item, ItemLightSource> ITEM_LIGHT_SOURCES = new Reference2ObjectOpenHashMap<>();
+    private static final Map<Item, ItemLightSource> STATIC_ITEM_LIGHT_SOURCES = new Reference2ObjectOpenHashMap<>();
 
-	private ItemLightSources() {
-		throw new UnsupportedOperationException("ItemLightSources only contains static definitions.");
-	}
+    private static final String[] itemJsons = {
+            "blaze_powder.json",
+            "blaze_rod.json",
+            "fire_charge.json",
+            "glowstone_dust.json",
+            "lava_bucket.json",
+            "nether_star.json",
+            "prismarine_crystals.json",
+            "redstone_torch.json",
+            "spectral_arrow.json",
+            "torch.json"
+    };
 
-	/**
-	 * Loads the item light source data from resource pack.
-	 *
-	 * @param resourceManager The resource manager.
-	 */
-	public static void load(ResourceManager resourceManager) {
-		ITEM_LIGHT_SOURCES.clear();
+    private ItemLightSources() {
+        throw new UnsupportedOperationException("ItemLightSources only contains static definitions.");
+    }
 
-		resourceManager.listResources("dynamiclights/item", path -> path.getPath().endsWith(".json"))
-				.forEach(ItemLightSources::load);
+    /**
+     * Loads the item light source data from resource pack.
+     *
+     * @param resourceManager The resource manager.
+     */
+    public static void load(IResourceManager resourceManager) {
+        ITEM_LIGHT_SOURCES.clear();
 
-		ITEM_LIGHT_SOURCES.putAll(STATIC_ITEM_LIGHT_SOURCES);
-	}
+        for (String filename : itemJsons) {
+            ResourceLocation location = new ResourceLocation("sodiumdynamiclights", "dynamiclights/item/" + filename);
+            try {
+                for (IResource resource : resourceManager.getAllResources(location)) {
+                    load(location, resource);
+                }
+            } catch (IOException e) {
+                SodiumDynamicLights.get().warn("Failed to load " + location);
+            }
+        }
 
-	private static void load(ResourceLocation resourceId, Resource resource) {
-		var id = #if AFTER_21_1 ResourceLocation.fromNamespaceAndPath #else new ResourceLocation #endif (resourceId.getNamespace(), resourceId.getPath().replace(".json", ""));
+        ITEM_LIGHT_SOURCES.putAll(STATIC_ITEM_LIGHT_SOURCES);
+    }
 
-		try (var reader = new InputStreamReader(resource.open())) {
-			var json = JsonParser.parseReader(reader).getAsJsonObject();
+    private static void load(ResourceLocation resourceId, IResource resource) {
+        ResourceLocation id = new ResourceLocation(resourceId.getNamespace(), resourceId.getPath().replace(".json", "")
+        );
 
-			ItemLightSource.fromJson(id, json).ifPresent(data -> {
-				if (!STATIC_ITEM_LIGHT_SOURCES.containsKey(data.item()))
-					register(data);
-			});
-		} catch (IOException | IllegalStateException e) {
-			SodiumDynamicLights.get().warn("Failed to load item light source \"" + id + "\".");
-		}
-	}
+        try (InputStreamReader reader = new InputStreamReader(resource.getInputStream())) {
+            JsonObject json = JsonParser.parseReader(reader).getAsJsonObject();
 
-	/**
-	 * Registers an item light source data.
-	 *
-	 * @param data The item light source data.
-	 */
-	private static void register(ItemLightSource data) {
-		var other = ITEM_LIGHT_SOURCES.get(data.item());
+            ItemLightSource.fromJson(id, json).ifPresent(data -> {
+                if (!STATIC_ITEM_LIGHT_SOURCES.containsKey(data.item()))
+                    register(data);
+            });
+        } catch (IOException | IllegalStateException e) {
+            SodiumDynamicLights.get().warn("Failed to load item light source \"" + id + "\".");
+        }
+    }
 
-		if (other != null) {
-			SodiumDynamicLights.get().warn("Failed to register item light source \"" + data.id() + "\", duplicates item \""
-					+ BuiltInRegistries.ITEM.getId(data.item()) + "\" found in \"" + other.id() + "\".");
-			return;
-		}
+    /**
+     * Registers an item light source data.
+     *
+     * @param data The item light source data.
+     */
+    private static void register(ItemLightSource data) {
+        var other = ITEM_LIGHT_SOURCES.get(data.item());
 
-		ITEM_LIGHT_SOURCES.put(data.item(), data);
-	}
+        if (other != null) {
+            SodiumDynamicLights.get().warn("Failed to register item light source \"" + data.id() + "\", duplicates item \""
+                    + Item.REGISTRY.getNameForObject(data.item()) + "\" found in \"" + other.id() + "\".");
+            return;
+        }
 
-	/**
-	 * Registers an item light source data.
-	 *
-	 * @param data the item light source data
-	 */
-	public static void registerItemLightSource(ItemLightSource data) {
-		var other = STATIC_ITEM_LIGHT_SOURCES.get(data.item());
+        ITEM_LIGHT_SOURCES.put(data.item(), data);
+    }
 
-		if (other != null) {
-			SodiumDynamicLights.get().warn("Failed to register item light source \"" + data.id() + "\", duplicates item \""
-					+ BuiltInRegistries.ITEM.getId(data.item()) + "\" found in \"" + other.id() + "\".");
-			return;
-		}
+    /**
+     * Registers an item light source data.
+     *
+     * @param data the item light source data
+     */
+    public static void registerItemLightSource(ItemLightSource data) {
+        var other = STATIC_ITEM_LIGHT_SOURCES.get(data.item());
 
-		STATIC_ITEM_LIGHT_SOURCES.put(data.item(), data);
-	}
+        if (other != null) {
+            SodiumDynamicLights.get().warn("Failed to register item light source \"" + data.id() + "\", duplicates item \""
+                    + Item.REGISTRY.getNameForObject(data.item()) + "\" found in \"" + other.id() + "\".");
+            return;
+        }
 
-	/**
-	 * Returns the luminance of the item in the stack.
-	 *
-	 * @param stack the item stack
-	 * @param submergedInWater {@code true} if the stack is submerged in water, else {@code false}
-	 * @return a luminance value
-	 */
-	public static int getLuminance(ItemStack stack, boolean submergedInWater) {
-		var data = ITEM_LIGHT_SOURCES.get(stack.getItem());
+        STATIC_ITEM_LIGHT_SOURCES.put(data.item(), data);
+    }
 
-		if (data != null) {
-			return data.getLuminance(stack, submergedInWater);
-		} else if (stack.getItem() instanceof BlockItem blockItem)
-			return ItemLightSource.BlockItemLightSource.getLuminance(stack, blockItem.getBlock().defaultBlockState());
-		else return 0;
-	}
+    /**
+     * Returns the luminance of the item in the stack.
+     *
+     * @param stack            the item stack
+     * @param submergedInWater {@code true} if the stack is submerged in water, else {@code false}
+     * @return a luminance value
+     */
+    public static int getLuminance(ItemStack stack, boolean submergedInWater) {
+        ItemLightSource data = ITEM_LIGHT_SOURCES.get(stack.getItem());
+
+        if (data != null) {
+            return data.getLuminance(stack, submergedInWater);
+        } else if (stack.getItem() instanceof ItemBlock blockItem) {
+            return ItemLightSource.BlockItemLightSource.getLuminance(stack, blockItem.getBlock().getDefaultState());
+        } else {
+            return 0;
+        }
+    }
 }

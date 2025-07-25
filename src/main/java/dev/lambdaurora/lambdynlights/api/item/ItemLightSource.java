@@ -10,25 +10,19 @@
 package dev.lambdaurora.lambdynlights.api.item;
 
 import com.google.gson.JsonObject;
+import com.google.gson.JsonPrimitive;
+import net.minecraft.block.properties.IProperty;
+import net.minecraft.block.state.IBlockState;
+import net.minecraft.init.Blocks;
+import net.minecraft.init.Items;
+import net.minecraft.item.Item;
+import net.minecraft.item.ItemBlock;
+import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.util.ResourceLocation;
+import net.minecraftforge.fml.common.registry.ForgeRegistries;
+import toni.sodiumdynamiclights.config.DynamicLightsConfig;
 import toni.sodiumdynamiclights.SodiumDynamicLights;
-import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.item.BlockItem;
-import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
-import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.block.state.BlockState;
-import org.jetbrains.annotations.NotNull;
-
-#if mc>=214
-import net.minecraft.core.HolderSet;
-#endif
-
-#if AFTER_21_1
-import net.minecraft.core.component.DataComponents;
-import net.minecraft.world.item.component.BlockItemStateProperties;
-#endif
 
 import java.util.Optional;
 
@@ -74,7 +68,7 @@ public abstract class ItemLightSource {
 	 * @return the luminance value between {@code 0} and {@code 15}
 	 */
 	public int getLuminance(ItemStack stack, boolean submergedInWater) {
-		if (this.waterSensitive() && SodiumDynamicLights.get().config.getWaterSensitiveCheck().get() && submergedInWater)
+		if (this.waterSensitive() && DynamicLightsConfig.waterSensitiveCheck && submergedInWater)
 			return 0; // Don't emit light with water sensitive items while submerged in water.
 
 		return this.getLuminance(stack);
@@ -97,50 +91,52 @@ public abstract class ItemLightSource {
 				'}';
 	}
 
-	public static @NotNull Optional<ItemLightSource> fromJson(@NotNull ResourceLocation id, @NotNull JsonObject json) {
+	public static Optional<ItemLightSource> fromJson(ResourceLocation id, JsonObject json) {
 		if (!json.has("item") || !json.has("luminance")) {
 			SodiumDynamicLights.get().warn("Failed to parse item light source \"" + id + "\", invalid format: missing required fields.");
 			return Optional.empty();
 		}
 
-		var affectId = ResourceLocation.tryParse(json.get("item").getAsString());
-
-		#if mc >= 214
-		var ref = BuiltInRegistries.ITEM.get(affectId);
-		if (ref.isEmpty())
+		Item item;
+		try {
+			ResourceLocation affectId = new ResourceLocation(json.get("item").getAsString());
+			item = ForgeRegistries.ITEMS.getValue(affectId);
+		} catch (Exception e) {
+			SodiumDynamicLights.get().warn("Failed to parse item ID for \"" + id + "\".");
 			return Optional.empty();
+		}
 
-		var item = ref.get().value();
-		#else
-		var item = BuiltInRegistries.ITEM.get(affectId);
- 		#endif
-
-		if (item == Items.AIR)
+		if (item == null || item == Items.AIR)
 			return Optional.empty();
 
 		boolean waterSensitive = false;
 		if (json.has("water_sensitive"))
 			waterSensitive = json.get("water_sensitive").getAsBoolean();
 
-		var luminanceElement = json.get("luminance").getAsJsonPrimitive();
+		JsonPrimitive luminanceElement = json.getAsJsonPrimitive("luminance");
+
 		if (luminanceElement.isNumber()) {
 			return Optional.of(new StaticItemLightSource(id, item, luminanceElement.getAsInt(), waterSensitive));
 		} else if (luminanceElement.isString()) {
-			var luminanceStr = luminanceElement.getAsString();
+			String luminanceStr = luminanceElement.getAsString();
 			if (luminanceStr.equals("block")) {
-				if (item instanceof BlockItem blockItem) {
-					return Optional.of(new BlockItemLightSource(id, item, blockItem.getBlock().defaultBlockState(), waterSensitive));
+				if (item instanceof ItemBlock) {
+					ItemBlock blockItem = (ItemBlock) item;
+					return Optional.of(new BlockItemLightSource(id, item, blockItem.getBlock().getDefaultState(), waterSensitive));
 				}
 			} else {
-				var blockId = ResourceLocation.tryParse(luminanceStr);
-				if (blockId != null) {
-					var block = BuiltInRegistries.BLOCK.get(blockId) #if mc >= 214 .get().value() #endif;
-					if (block != Blocks.AIR)
-						return Optional.of(new BlockItemLightSource(id, item, block.defaultBlockState(), waterSensitive));
+				try {
+					ResourceLocation blockId = new ResourceLocation(luminanceStr);
+					net.minecraft.block.Block block = ForgeRegistries.BLOCKS.getValue(blockId);
+					if (block != null && block != Blocks.AIR) {
+						return Optional.of(new BlockItemLightSource(id, item, block.getDefaultState(), waterSensitive));
+					}
+				} catch (Exception e) {
+					SodiumDynamicLights.get().warn("Invalid block ID in luminance: \"" + luminanceStr + "\"");
 				}
 			}
 		} else {
-			SodiumDynamicLights.get().warn("Failed to parse item light source \"" + id + "\", invalid format: \"luminance\" field value isn't string or integer.");
+			SodiumDynamicLights.get().warn("Failed to parse item light source \"" + id + "\", invalid format: \"luminance\" field is not a string or number.");
 		}
 
 		return Optional.empty();
@@ -166,9 +162,9 @@ public abstract class ItemLightSource {
 	}
 
 	public static class BlockItemLightSource extends ItemLightSource {
-		private final BlockState mimic;
+		private final IBlockState mimic;
 
-		public BlockItemLightSource(ResourceLocation id, Item item, BlockState block, boolean waterSensitive) {
+		public BlockItemLightSource(ResourceLocation id, Item item, IBlockState block, boolean waterSensitive) {
 			super(id, item, waterSensitive);
 			this.mimic = block;
 		}
@@ -178,32 +174,34 @@ public abstract class ItemLightSource {
 			return getLuminance(stack, this.mimic);
 		}
 
-		static int getLuminance(ItemStack stack, BlockState state) {
-			#if AFTER_21_1
-			var nbt = stack.getComponents().getOrDefault(DataComponents.BLOCK_STATE, BlockItemStateProperties.EMPTY);
+		static int getLuminance(ItemStack stack, IBlockState state) {
+			NBTTagCompound nbt = stack.getTagCompound();
+			if (nbt != null && nbt.hasKey("BlockStateTag", 10)) {
+				NBTTagCompound blockStateTag = nbt.getCompoundTag("BlockStateTag");
 
-			if (!nbt.isEmpty()) {
-				state = nbt.apply(state);
-			}
+				for (String key : blockStateTag.getKeySet()) {
+					IProperty<?> property = state.getPropertyKeys().stream()
+							.filter(p -> p.getName().equals(key))
+							.findFirst()
+							.orElse(null);
 
-			#else
-			var nbt = stack.getTag();
-
-			if (nbt != null) {
-				var blockStateTag = nbt.getCompound("BlockStateTag");
-				var stateManager = state.getBlock().getStateDefinition();
-
-				for (var key : blockStateTag.getAllKeys()) {
-					var property = stateManager.getProperty(key);
 					if (property != null) {
-						var value = blockStateTag.get(key).toString();
-						state = BlockItem.updateState(state, property, value);
+						String value = blockStateTag.getString(key);
+						state = updateState(state, property, value);
 					}
 				}
 			}
-			#endif
 
-			return state.getLightEmission();
+			return state.getLightValue();
+		}
+
+		private static <T extends Comparable<T>> IBlockState updateState(IBlockState state, IProperty<T> property, String valueStr) {
+			for (T value : property.getAllowedValues()) {
+				if (value.toString().equalsIgnoreCase(valueStr)) {
+					return state.withProperty(property, value);
+				}
+			}
+			return state;
 		}
 	}
 }
