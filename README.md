@@ -1,6 +1,7 @@
 # Celeritas Dynamic Lights
 
 ## Fork of SodiumDynamicLights for Celeritas on 1.12.2
+### You need cleanroom loader to run this mod
 
 Despite the name, this mod is **not exclusive to Celeritas**. It works on its own, but for best performance, use it with a mod that supports **deferred chunk updates**, such as:
 
