@@ -18,6 +18,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import toni.sodiumdynamiclights.DynamicLightSource;
 import toni.sodiumdynamiclights.config.DynamicLightsConfig;
 import toni.sodiumdynamiclights.SodiumDynamicLights;
@@ -100,10 +101,25 @@ public abstract class EntityMixin implements DynamicLightSource {
                     this.sodiumdynamiclights$luminance = 0;
                 }
 
-
                 SodiumDynamicLights.updateTracking(this);
             }
         }
+    }
+
+    @Inject(method = "getBrightnessForRender",at = @At("RETURN"), cancellable = true)
+        private void ongetBrightnessForRender(CallbackInfoReturnable<Integer> cir){
+        int original = cir.getReturnValue();
+
+        int sky = original >> 20;
+        int block = (original >> 4) & 0xFFFF;
+
+        int dynamic = (int) SodiumDynamicLights.get().getDynamicLightLevel(new BlockPos(posX,posY + getEyeHeight(),posZ));
+        if (dynamic > block) {
+            block = dynamic;
+        }
+
+        int result = (sky << 20) | (block << 4);
+        cir.setReturnValue(result);
     }
 
     @Inject(method = "onRemovedFromWorld", at = @At("TAIL"))

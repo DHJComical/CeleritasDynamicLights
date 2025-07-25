@@ -13,7 +13,6 @@
     "RenderGlobalMixin",
     "StateImplementationMixin",
     "WorldClientMixin",
-    "WorldMixin",
     "lightsource.EntityMixin",
     "lightsource.LivingEntityMixin",
     "lightsource.PlayerEntityMixin",
