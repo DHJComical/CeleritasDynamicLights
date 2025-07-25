@@ -55,7 +55,6 @@ public final class DynamicLightHandlers {
 			return luminance;
 		});
 		registerEntityDynamicLightHandler(EntityItem.class, entity -> SodiumDynamicLights.getLuminanceFromItemStack(entity.getItem(), entity.isOverWater()));
-		//TODO Item frame not working
 		registerEntityDynamicLightHandler(EntityItemFrame.class, entity -> {
             BlockPos pos = new BlockPos(entity.posX, entity.posY + entity.getEyeHeight(), entity.posZ);
 			boolean isSubmerged = entity.world.getBlockState(pos).getMaterial().isLiquid();
