@@ -107,7 +107,7 @@ public abstract class EntityMixin implements DynamicLightSource {
     }
 
     @Inject(method = "getBrightnessForRender",at = @At("RETURN"), cancellable = true)
-        private void ongetBrightnessForRender(CallbackInfoReturnable<Integer> cir){
+        private void onGetBrightnessForRender(CallbackInfoReturnable<Integer> cir){
         int original = cir.getReturnValue();
 
         int sky = original >> 20;
@@ -215,9 +215,13 @@ public abstract class EntityMixin implements DynamicLightSource {
                 SodiumDynamicLights.scheduleChunkRebuild(renderer, chunkPos);
                 SodiumDynamicLights.updateTrackedChunks(chunkPos, this.sodiumdynamiclights$trackedLitChunkPos, newPos);
 
-                var directionX = ((int) this.posX & 15) >= 8 ? EnumFacing.EAST : EnumFacing.WEST;
-                var directionY = ((int) eyeY & 15) >= 8 ? EnumFacing.UP : EnumFacing.DOWN;
-                var directionZ = ((int) this.posZ & 15) >= 8 ? EnumFacing.SOUTH : EnumFacing.NORTH;
+                double localX = this.posX - Math.floor(this.posX / 16) * 16;
+                double localY = (this.posY + this.getEyeHeight()) - Math.floor((this.posY + this.getEyeHeight()) / 16) * 16;
+                double localZ = this.posZ - Math.floor(this.posZ / 16) * 16;
+
+                EnumFacing directionX = localX >= 8.0 ? EnumFacing.EAST : EnumFacing.WEST;
+                EnumFacing directionY = localY >= 8.0 ? EnumFacing.UP : EnumFacing.DOWN;
+                EnumFacing directionZ = localZ >= 8.0 ? EnumFacing.SOUTH : EnumFacing.NORTH;
 
                 for (int i = 0; i < 7; i++) {
                     if (i % 4 == 0) {

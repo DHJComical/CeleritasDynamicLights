@@ -133,9 +133,13 @@ public abstract class TileEntityMixin implements DynamicLightSource {
 
                 SodiumDynamicLights.updateTrackedChunks(chunkPos, null, this.sodiumdynamiclights$trackedLitChunkPos);
 
-                var directionX = (this.pos.getX() & 15) >= 8 ? EnumFacing.EAST : EnumFacing.WEST;
-                var directionY = (this.pos.getY() & 15) >= 8 ? EnumFacing.UP : EnumFacing.DOWN;
-                var directionZ = (this.pos.getZ() & 15) >= 8 ? EnumFacing.SOUTH : EnumFacing.NORTH;
+                double localX = this.pos.getX() - Math.floor(this.pos.getX() / 16.0) * 16.0;
+                double localY = this.pos.getY() - Math.floor(this.pos.getY() / 16.0) * 16.0;
+                double localZ = this.pos.getZ() - Math.floor(this.pos.getZ() / 16.0) * 16.0;
+
+                EnumFacing directionX = localX >= 8.0 ? EnumFacing.EAST : EnumFacing.WEST;
+                EnumFacing directionY = localY >= 8.0 ? EnumFacing.UP : EnumFacing.DOWN;
+                EnumFacing directionZ = localZ >= 8.0 ? EnumFacing.SOUTH : EnumFacing.NORTH;
 
                 for (int i = 0; i < 7; i++) {
                     if (i % 4 == 0) {
