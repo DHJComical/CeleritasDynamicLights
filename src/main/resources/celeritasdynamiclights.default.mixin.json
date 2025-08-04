@@ -3,21 +3,23 @@
   "package": "toni.sodiumdynamiclights.mixin",
   "compatibilityLevel": "JAVA_8",
   "target": "@env(DEFAULT)",
-  "mixins": [],
+  "mixins": [
+  ],
   "minVersion": "0.8.7",
   "server": [],
   "client": [
-    "TileEntityTypeMixin",
     "EntityMixin",
+    "ItemRendererMixin",
     "MinecraftMixin",
     "RenderGlobalMixin",
     "StateImplementationMixin",
+    "TileEntityTypeMixin",
     "WorldClientMixin",
+    "lightsource.EntityHangingMixin",
     "lightsource.EntityMixin",
     "lightsource.LivingEntityMixin",
     "lightsource.PlayerEntityMixin",
     "lightsource.PrimedTntEntityMixin",
-    "lightsource.TileEntityMixin",
-    "lightsource.EntityHangingMixin"
+    "lightsource.TileEntityMixin"
   ]
 }

@@ -11,10 +11,7 @@ package toni.sodiumdynamiclights.mixin.lightsource;
 
 import net.minecraft.client.renderer.RenderGlobal;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.init.Items;
-import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
@@ -107,18 +104,23 @@ public abstract class EntityMixin implements DynamicLightSource {
     }
 
     @Inject(method = "getBrightnessForRender",at = @At("RETURN"), cancellable = true)
-        private void onGetBrightnessForRender(CallbackInfoReturnable<Integer> cir){
-        int original = cir.getReturnValue();
+    private void onGetBrightnessForRender(CallbackInfoReturnable<Integer> cir) {
+        if (!DynamicLightsConfig.dynamicLightsMode.isEnabled())
+            return;
 
-        int sky = original >> 20;
-        int block = (original >> 4) & 0xFFFF;
+        int vanilla = cir.getReturnValue();
 
-        int dynamic = (int) SodiumDynamicLights.get().getDynamicLightLevel(new BlockPos(posX,posY + getEyeHeight(),posZ));
-        if (dynamic > block) {
-            block = dynamic;
-        }
+        int sky = vanilla >> 20;
+        int block = (vanilla >> 4) & 0xFFFF;
 
-        int result = (sky << 20) | (block << 4);
+        int entityLuminance = this.sdl$getLuminance();
+        int posLuminance = (int) SodiumDynamicLights.get().getDynamicLightLevel(
+                new BlockPos(posX, posY, posZ)
+        );
+
+        int finalBlock = Math.max(Math.max(block, entityLuminance), posLuminance);
+        int result = (sky << 20) | (finalBlock << 4);
+
         cir.setReturnValue(result);
     }
 
