@@ -19,6 +19,11 @@ dependencies {
     if (propertyBool('enable_lwjglx')) {
         compileOnly "com.cleanroommc:lwjglx:1.0.0"
     }
+
+    fileTree(dir: 'libs', include: ['*.jar']).each { jar ->
+        modCompileOnly files(jar)
+    }
+
     // Example - Dependency descriptor:
     // 'com.google.code.gson:gson:2.8.6' << group: com.google.code.gson, name:gson, version:2.8.6
     // 'group:name:version:classifier' where classifier is optional

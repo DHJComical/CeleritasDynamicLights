@@ -63,7 +63,7 @@ public final class ItemLightSources {
         ITEM_LIGHT_SOURCES.clear();
 
         for (String filename : itemJsons) {
-            ResourceLocation location = new ResourceLocation("sodiumdynamiclights", "dynamiclights/item/" + filename);
+            ResourceLocation location = new ResourceLocation("celeritasdynamiclights", "dynamiclights/item/" + filename);
             try {
                 for (IResource resource : resourceManager.getAllResources(location)) {
                     load(location, resource);

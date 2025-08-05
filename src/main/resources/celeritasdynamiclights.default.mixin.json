@@ -11,6 +11,7 @@
     "EntityMixin",
     "ItemRendererMixin",
     "MinecraftMixin",
+    "ParticleMixin",
     "RenderGlobalMixin",
     "StateImplementationMixin",
     "TileEntityTypeMixin",
