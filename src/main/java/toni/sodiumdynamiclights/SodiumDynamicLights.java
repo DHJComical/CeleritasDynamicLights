@@ -19,7 +19,6 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.RenderGlobal;
 import net.minecraft.client.resources.IReloadableResourceManager;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityLiving;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.item.EntityTNTPrimed;
 import net.minecraft.entity.monster.EntityCreeper;
@@ -27,22 +26,20 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.EnumSkyBlock;
 import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.common.config.ConfigManager;
-import net.minecraftforge.fluids.BlockFluidBase;
 import net.minecraftforge.fluids.IFluidBlock;
-import net.minecraftforge.fml.client.event.ConfigChangedEvent;
 import net.minecraftforge.fml.common.FMLCommonHandler;
+import net.minecraftforge.fml.common.Loader;
 import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.fml.common.event.FMLConstructionEvent;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import org.apache.logging.log4j.LogManager;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.apache.logging.log4j.Logger;
 import toni.sodiumdynamiclights.accessor.WorldRendererAccessor;
+import toni.sodiumdynamiclights.config.CeleritasOptionsListener;
 import toni.sodiumdynamiclights.config.ConfigEventHandler;
 import toni.sodiumdynamiclights.config.DynamicLightsConfig;
 
@@ -62,6 +59,7 @@ import java.util.function.Predicate;
 @Mod(modid = "celeritasdynamiclights", name = "Celeritas Dynamic Lights", version = "1.2.0", clientSideOnly = true, acceptableRemoteVersions = "*")
 public class SodiumDynamicLights {
     public static final Logger LOGGER = LogManager.getLogger("Celeritas Dynamic Lights");
+    @Mod.Instance
     public static SodiumDynamicLights INSTANCE;
 
     private static final double MAX_RADIUS = 7.75;
@@ -71,9 +69,21 @@ public class SodiumDynamicLights {
     private long lastUpdate = System.currentTimeMillis();
     private int lastUpdateCount = 0;
 
-    public SodiumDynamicLights() {
-        MinecraftForge.EVENT_BUS.register(this);
-        INSTANCE = this;
+    @Mod.EventHandler
+    public void construct(FMLConstructionEvent event) {
+        if (Loader.isModLoaded("celeritas")) {
+            try {
+                Class.forName("org.taumc.celeritas.api.OptionGUIConstructionEvent");
+                MinecraftForge.EVENT_BUS.register(CeleritasOptionsListener.class);
+            } catch (Throwable t) {
+                if (t instanceof ClassNotFoundException) {
+                    LOGGER.error("Celeritas is not up-to-date, cannot insert options into Celeritas' video options menu.");
+                } else {
+                    LOGGER.error("Unable to check if Celeritas is up-to-date.", t);
+                }
+            }
+
+        }
     }
 
     @Mod.EventHandler
