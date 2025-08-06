@@ -32,8 +32,8 @@ public class DynamicLightsCeleritasPage{
                         .setTooltip(ComponentUtil.translatable("sodium.dynamiclights.options.mode.desc"))
                         .setControl(option -> new CyclingControl<>(option, DynamicLightsMode.class, new ITextComponent[]{
                                 DynamicLightsMode.OFF.getTranslatedText(),
-                                DynamicLightsMode.FAST.getTranslatedText(),
                                 DynamicLightsMode.SLOW.getTranslatedText(),
+                                DynamicLightsMode.FAST.getTranslatedText(),
                                 DynamicLightsMode.REALTIME.getTranslatedText()
                         }))
                         .setBinding((options, value) -> {
