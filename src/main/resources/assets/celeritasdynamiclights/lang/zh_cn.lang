@@ -1,0 +1,36 @@
+#PARSE_ESCAPES
+sodiumdynamiclights.menu.light_sources=动态光源
+sodiumdynamiclights.menu.title=SodiumDynamicLights 设置
+sodiumdynamiclights.menu.canvas.1=建议在使用Canvas时禁用实体动态光源！
+sodiumdynamiclights.menu.canvas.2=目前，在Canvas下使用动态光源会严重影响性能！
+sodiumdynamiclights.menu.tabs.general=通用
+sodiumdynamiclights.option.light_sources.block_entities=方块实体
+sodiumdynamiclights.option.light_sources.entities=实体
+sodiumdynamiclights.option.light_sources.self=第一人称视角
+sodiumdynamiclights.option.light_sources.water_sensitive_check=浸水检测
+sodiumdynamiclights.option.mode=动态光源
+sodiumdynamiclights.tooltip.block_entities=启用方块实体的动态光源。
+sodiumdynamiclights.tooltip.creeper_lighting=设置爬行者的动态光源模式。\n- %s 会禁用爬行者的动态光源。\n- %s 会设置为一个恒定的亮度。\n- %s 会设置为一个动态的亮度。
+sodiumdynamiclights.tooltip.entities=启用实体的动态光源。注意：玩家始终会发光。
+sodiumdynamiclights.tooltip.mode.1=启用动态光源。例如，启用后玩家手持火把时可以照亮周围。
+sodiumdynamiclights.tooltip.mode.2=%s 和 %s 会有些许延迟，但这能最小化光照更新的次数。
+sodiumdynamiclights.tooltip.mode.3=%s 是流畅的动态光源效果。
+sodiumdynamiclights.tooltip.self_light_source=启用第一人称视角的动态光源。如果你使用的光影包自带动态光源，建议禁用此项。
+sodiumdynamiclights.tooltip.tnt_lighting=设置已点燃的TNT的动态光源模式。\n- %s 会禁用TNT的动态光源。\n- %s 会设置为一个恒定的亮度。\n- %s 会设置为一个动态的亮度。
+sodiumdynamiclights.tooltip.water_sensitive=启用浸水敏感光源检查。这意味着某些物品在浸入水中时将不会发光。
+
+sodium.dynamiclights.options.page=动态光源
+sodium.dynamiclights.options.mode=质量模式
+sodium.dynamiclights.options.mode.desc=配置动态光源的更新速率
+sodium.dynamiclights.options.self=手持物品发光
+sodium.dynamiclights.options.self.desc=启用第一人称视角的动态光源。如果你使用的光影包自带动态光源，建议禁用此项。
+sodium.dynamiclights.options.entities=实体动态光源
+sodium.dynamiclights.options.entities.desc=启用后，实体（如生物和掉落物）将会动态发光。
+sodium.dynamiclights.options.blockentities=方块实体动态光源
+sodium.dynamiclights.options.blockentities.desc=启用后，方块实体将会动态发光。
+sodium.dynamiclights.options.underwater=浸水时熄灭
+sodium.dynamiclights.options.underwater.desc=启用浸水敏感光源检查。这意味着某些物品在浸入水中时将不会发光。
+sodium.dynamiclights.options.tnt=TNT光源质量
+sodium.dynamiclights.options.tnt.desc=配置TNT动态光源的更新速率。
+sodium.dynamiclights.options.creeper=爬行者光源质量
+sodium.dynamiclights.options.creeper.desc=配置爬行者动态光源的更新速率。
