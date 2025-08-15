@@ -22,27 +22,27 @@ import org.spongepowered.asm.mixin.Unique;
 
 import java.util.Map;
 
-@Mixin(value = Class.class, remap = false)
-public class TileEntityTypeMixin<T extends TileEntity> implements DynamicLightHandlerHolder<T> {
+@Mixin(value = TileEntity.class)
+public class TileEntityTypeMixin implements DynamicLightHandlerHolder<TileEntity> {
 	@Unique
-	private DynamicLightHandler<T> sodiumdynamiclights$lightHandler;
+	private DynamicLightHandler<TileEntity> sodiumdynamiclights$lightHandler;
 	@Unique
 	private Boolean sodiumdynamiclights$setting;
 
 	@Override
-	public @Nullable DynamicLightHandler<T> sodiumdynamiclights$getDynamicLightHandler() {
+	public @Nullable DynamicLightHandler<TileEntity> sodiumdynamiclights$getDynamicLightHandler() {
 		return this.sodiumdynamiclights$lightHandler;
 	}
 
 	@Override
-	public void sodiumdynamiclights$setDynamicLightHandler(DynamicLightHandler<T> handler) {
+	public void sodiumdynamiclights$setDynamicLightHandler(DynamicLightHandler<TileEntity> handler) {
 		this.sodiumdynamiclights$lightHandler = handler;
 	}
 
 	@Override
 	public boolean sodiumdynamiclights$getSetting() {
 		if (this.sodiumdynamiclights$setting == null) {
-			Class<?> self = (Class<?>) (Object) this;
+			TileEntity self = (TileEntity) (Object) this;
 			ResourceLocation id = getRegistryName(self);
 			if (id == null) {
 				return false;
@@ -64,7 +64,7 @@ public class TileEntityTypeMixin<T extends TileEntity> implements DynamicLightHa
 
 	@Override
 	public TextComponentString sodiumdynamiclights$getName() {
-		Class<?> self = (Class<?>) (Object) this;
+		TileEntity self = (TileEntity) (Object) this;
 		ResourceLocation id = getRegistryName(self);
 		if (id == null) {
 			return new TextComponentString("");
@@ -72,8 +72,7 @@ public class TileEntityTypeMixin<T extends TileEntity> implements DynamicLightHa
 		return new TextComponentString(id.getNamespace() + ':' + id.getPath());
 	}
 
-	private ResourceLocation getRegistryName(Class<?> tileEntityClass) {
-		Class<? extends TileEntity> teClass = (Class<? extends TileEntity>) tileEntityClass;
-		return TileEntity.getKey(teClass);
+	private ResourceLocation getRegistryName(TileEntity tileEntity) {
+		return TileEntity.getKey(tileEntity.getClass());
 	}
 }
