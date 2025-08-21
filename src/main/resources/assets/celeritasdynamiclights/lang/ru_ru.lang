@@ -30,7 +30,15 @@ sodium.dynamiclights.options.blockentities=Динамическое освеще
 sodium.dynamiclights.options.blockentities.desc=Если включено, блочные сущности будут иметь динамическое освещение.
 sodium.dynamiclights.options.underwater=Гаснуть под водой
 sodium.dynamiclights.options.underwater.desc=Включает проверку источников света на нахождение в воде. Это означает, что некоторые предметы не будут излучать свет при погружении в воду.
-sodium.dynamiclights.options.tnt=Качество освещения динамита
-sodium.dynamiclights.options.tnt.desc=Настраивает скорость обновления для освещения динамита.
-sodium.dynamiclights.options.creeper=Качество освещения крипера
-sodium.dynamiclights.options.creeper.desc=Конфигурирует скорость обновления для освещения крипера.
+sodium.dynamiclights.options.tnt=Качество освещения Динамита
+sodium.dynamiclights.options.tnt.desc=Устанавливает режим динамического освещения для динамита.\n- %s отключает динамическое освещение динамита.\n- %s устанавливает постоянную яркость.\n- %s устанавливает динамическую яркость.
+sodium.dynamiclights.options.creeper=Качество освещения Крипера
+sodium.dynamiclights.options.creeper.desc=Устанавливает режим динамического освещения у Криперов.\n- %s отключает динамическое освещение Криперов.\n- %s устанавливает постоянную яркость.\n- %s устанавливает динамическую яркость.
+
+sodium.dynamiclights.options.value.off=Выкл
+sodium.dynamiclights.options.value.slow=Медленно
+sodium.dynamiclights.options.value.fast=Быстро
+sodium.dynamiclights.options.value.realtime=В реальном времени
+sodium.dynamiclights.options.value.simple=Простое
+sodium.dynamiclights.options.value.fancy=Детальное
+
