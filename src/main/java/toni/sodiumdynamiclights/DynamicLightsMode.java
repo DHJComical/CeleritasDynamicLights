@@ -9,7 +9,7 @@
 
 package toni.sodiumdynamiclights;
 
-import net.minecraft.util.text.TextComponentString;
+import net.minecraft.util.text.TextComponentTranslation;
 import net.minecraft.util.text.TextFormatting;
 import org.jetbrains.annotations.NotNull;
 
@@ -24,18 +24,18 @@ import java.util.Optional;
  * @since 1.0.0
  */
 public enum DynamicLightsMode {
-	OFF(0, TextFormatting.RED, "OFF"),
-	SLOW(500, TextFormatting.YELLOW, "SLOW"),
-	FAST(250, TextFormatting.GOLD, "FAST"),
-	REALTIME(0, TextFormatting.GREEN, "REALTIME");
+	OFF(0, TextFormatting.RED, "sodium.dynamiclights.options.value.off"),
+	SLOW(500, TextFormatting.YELLOW, "sodium.dynamiclights.options.value.slow"),
+	FAST(250, TextFormatting.GOLD, "sodium.dynamiclights.options.value.fast"),
+	REALTIME(0, TextFormatting.GREEN, "sodium.dynamiclights.options.value.realtime");
 
 	private final int delay;
-	private final TextComponentString translatedText;
+	private final TextComponentTranslation translationComponent;
 
-	DynamicLightsMode(int delay, @NotNull TextFormatting formatting, @NotNull String translatedText) {
+	DynamicLightsMode(int delay, @NotNull TextFormatting formatting, @NotNull String translationKey) {
 		this.delay = delay;
-		this.translatedText = new TextComponentString(translatedText);
-		this.translatedText.getStyle().setColor(formatting);
+		this.translationComponent = new TextComponentTranslation(translationKey);
+		this.translationComponent.getStyle().setColor(formatting);
 	}
 
 	/**
@@ -78,12 +78,12 @@ public enum DynamicLightsMode {
 	}
 
 	/**
-	 * Returns the translated text of the dynamic lights mode.
+	 * Returns the translation component of the dynamic lights mode.
 	 *
-	 * @return the translated text of the dynamic lights mode
+	 * @return the translation component of the dynamic lights mode
 	 */
-	public @NotNull TextComponentString getTranslatedText() {
-		return this.translatedText;
+	public @NotNull TextComponentTranslation getTranslationComponent() {
+		return this.translationComponent;
 	}
 
 	/**

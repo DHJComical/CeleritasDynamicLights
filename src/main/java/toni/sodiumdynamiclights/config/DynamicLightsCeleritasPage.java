@@ -31,10 +31,10 @@ public class DynamicLightsCeleritasPage{
                         .setName(ComponentUtil.translatable("sodium.dynamiclights.options.mode"))
                         .setTooltip(ComponentUtil.translatable("sodium.dynamiclights.options.mode.desc"))
                         .setControl(option -> new CyclingControl<>(option, DynamicLightsMode.class, new ITextComponent[]{
-                                DynamicLightsMode.OFF.getTranslatedText(),
-                                DynamicLightsMode.SLOW.getTranslatedText(),
-                                DynamicLightsMode.FAST.getTranslatedText(),
-                                DynamicLightsMode.REALTIME.getTranslatedText()
+                                DynamicLightsMode.OFF.getTranslationComponent(),
+                                DynamicLightsMode.SLOW.getTranslationComponent(),
+                                DynamicLightsMode.FAST.getTranslationComponent(),
+                                DynamicLightsMode.REALTIME.getTranslationComponent()
                         }))
                         .setBinding((options, value) -> {
                                     DynamicLightsConfig.dynamicLightsMode = value;
@@ -86,11 +86,15 @@ public class DynamicLightsCeleritasPage{
                 .add(OptionImpl.createBuilder(ExplosiveLightingMode.class, mixinsOptionsStorage)
                         .setId(ResourceLocations.OPTIONS_TNT)
                         .setName(ComponentUtil.translatable("sodium.dynamiclights.options.tnt"))
-                        .setTooltip(ComponentUtil.translatable("sodium.dynamiclights.options.tnt.desc"))
+                        .setTooltip(ComponentUtil.translatable("sodium.dynamiclights.options.tnt.desc",
+                                ExplosiveLightingMode.OFF.getTranslationComponent().getFormattedText(),
+                                ExplosiveLightingMode.SIMPLE.getTranslationComponent().getFormattedText(),
+                                ExplosiveLightingMode.FANCY.getTranslationComponent().getFormattedText()
+                        ))
                         .setControl(option -> new CyclingControl<>(option, ExplosiveLightingMode.class, new ITextComponent[]{
-                                ExplosiveLightingMode.OFF.getTranslatedText(),
-                                ExplosiveLightingMode.SIMPLE.getTranslatedText(),
-                                ExplosiveLightingMode.FANCY.getTranslatedText(),
+                                ExplosiveLightingMode.OFF.getTranslationComponent(),
+                                ExplosiveLightingMode.SIMPLE.getTranslationComponent(),
+                                ExplosiveLightingMode.FANCY.getTranslationComponent(),
                         }))
                         .setBinding((options, value) -> {
                                     DynamicLightsConfig.tntLightingMode = (value);
@@ -100,11 +104,15 @@ public class DynamicLightsCeleritasPage{
                 .add(OptionImpl.createBuilder(ExplosiveLightingMode.class, mixinsOptionsStorage)
                         .setId(ResourceLocations.OPTIONS_CREEPER)
                         .setName(ComponentUtil.translatable("sodium.dynamiclights.options.creeper"))
-                        .setTooltip(ComponentUtil.translatable("sodium.dynamiclights.options.creeper.desc"))
+                        .setTooltip(ComponentUtil.translatable("sodium.dynamiclights.options.creeper.desc",
+                                ExplosiveLightingMode.OFF.getTranslationComponent().getFormattedText(),
+                                ExplosiveLightingMode.SIMPLE.getTranslationComponent().getFormattedText(),
+                                ExplosiveLightingMode.FANCY.getTranslationComponent().getFormattedText()
+                        ))
                         .setControl(option -> new CyclingControl<>(option, ExplosiveLightingMode.class, new ITextComponent[]{
-                                ExplosiveLightingMode.OFF.getTranslatedText(),
-                                ExplosiveLightingMode.SIMPLE.getTranslatedText(),
-                                ExplosiveLightingMode.FANCY.getTranslatedText(),
+                                ExplosiveLightingMode.OFF.getTranslationComponent(),
+                                ExplosiveLightingMode.SIMPLE.getTranslationComponent(),
+                                ExplosiveLightingMode.FANCY.getTranslationComponent(),
                         }))
                         .setBinding((options, value) -> {
                                     DynamicLightsConfig.creeperLightingMode = (value);
