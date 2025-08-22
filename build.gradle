@@ -72,11 +72,11 @@ unimined.minecraft {
         if (propertyBool('use_access_transformer')) {
             accessTransformer "${rootProject.projectDir}/src/main/resources/" + propertyString('access_transformer_locations')
         }
-        loader "0.3.10-alpha"
+        loader "0.3.13-alpha"
         runs.auth.username = minecraft_username
         runs.all {
             var map = getSystemProperties();
-            map["cleanroom.dev.mixin"] = "${mod_id}.default.mixin.json"
+            map["cleanroom.dev.mixin"] = "${mod_id}.default.mixin.json,${mod_id}.mod.mixin.json"
             def extraArgs = propertyString('extra_jvm_args')
             if (extraArgs != null && !extraArgs.trim().isEmpty()) {
                 jvmArgs += extraArgs.split("\\s+").toList()
@@ -169,7 +169,7 @@ jar {
     doFirst {
         manifest {
             def attribute_map = [:]
-            attribute_map['MixinConfigs'] = "${mod_id}.default.mixin.json"
+            attribute_map['MixinConfigs'] = "${mod_id}.default.mixin.json,${mod_id}.mod.mixin.json"
             if (configurations.contain.size() > 0) {
                 attribute_map['ContainedDeps'] = configurations.contain.collect { it.name }.join(' ')
                 attribute_map['NonModDeps'] = true

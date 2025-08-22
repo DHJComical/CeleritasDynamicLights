@@ -1,0 +1,15 @@
+{
+  "required": true,
+  "package": "toni.sodiumdynamiclights.mixin",
+  "plugin": "toni.sodiumdynamiclights.SodiumDynamicLightsMixinConfigPlugin",
+  "compatibilityLevel": "JAVA_8",
+  "target": "@env(MOD)",
+  "mixins": [
+  ],
+  "minVersion": "0.8.7",
+  "setSourceFile": true,
+  "server": [],
+  "client": [
+    "mod.codechickenlib.LightMatrixMixin"
+  ]
+}
