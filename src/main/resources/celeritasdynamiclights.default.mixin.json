@@ -14,6 +14,7 @@
     "ParticleMixin",
     "RenderGlobalMixin",
     "StateImplementationMixin",
+    "TileEntityRendererDispatcherMixin",
     "TileEntityTypeMixin",
     "WorldClientMixin",
     "lightsource.EntityHangingMixin",
