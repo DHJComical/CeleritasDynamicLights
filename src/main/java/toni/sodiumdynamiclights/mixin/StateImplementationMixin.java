@@ -2,6 +2,7 @@ package toni.sodiumdynamiclights.mixin;
 
 import net.minecraft.block.state.BlockStateContainer;
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.client.Minecraft;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.IBlockAccess;
 import net.minecraftforge.fml.relauncher.Side;
@@ -19,14 +20,16 @@ public class StateImplementationMixin {
 
     @Inject(method = "getPackedLightmapCoords", at = @At("RETURN"), cancellable = true)
     private void onGetPackedLightmapCoords(IBlockAccess world, BlockPos pos, CallbackInfoReturnable<Integer> cir) {
-            IBlockState self = (IBlockState) this;
+        IBlockState self = (IBlockState) this;
 
-            if (!DynamicLightsConfig.dynamicLightsMode.isEnabled()) return;
+        if (!DynamicLightsConfig.dynamicLightsMode.isEnabled()) return;
 
+        if (Minecraft.getMinecraft().gameSettings.ambientOcclusion > 0) {
             if (self.isOpaqueCube()) return;
-
-            int vanillaLight = cir.getReturnValue();
-            int dynamicLight = SodiumDynamicLights.get().getLightmapWithDynamicLight(pos, vanillaLight);
-            cir.setReturnValue(dynamicLight);
         }
+
+        int vanillaLight = cir.getReturnValue();
+        int dynamicLight = SodiumDynamicLights.get().getLightmapWithDynamicLight(pos, vanillaLight);
+        cir.setReturnValue(dynamicLight);
     }
+}
