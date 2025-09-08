@@ -12,9 +12,6 @@ package toni.sodiumdynamiclights;
 import dev.lambdaurora.lambdynlights.api.DynamicLightHandlers;
 import dev.lambdaurora.lambdynlights.api.item.ItemLightSources;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockLiquid;
-import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.RenderGlobal;
 import net.minecraft.client.resources.IReloadableResourceManager;
@@ -27,7 +24,6 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.fluids.IFluidBlock;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.Loader;
 import net.minecraftforge.fml.common.Mod;
@@ -42,6 +38,7 @@ import toni.sodiumdynamiclights.accessor.WorldRendererAccessor;
 import toni.sodiumdynamiclights.config.CeleritasOptionsListener;
 import toni.sodiumdynamiclights.config.ConfigEventHandler;
 import toni.sodiumdynamiclights.config.DynamicLightsConfig;
+import toni.sodiumdynamiclights.util.FluidHandler;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -470,14 +467,7 @@ public class SodiumDynamicLights {
     }
 
     public static boolean isEyeSubmergedInFluid(EntityLivingBase entity) {
-        if (!DynamicLightsConfig.waterSensitiveCheck) {
-            return false;
-        }
-
-        BlockPos eyePos = new BlockPos(Math.floor(entity.posX), Math.floor(entity.posY + entity.getEyeHeight()), Math.floor(entity.posZ));
-        IBlockState state = entity.world.getBlockState(eyePos);
-        Block block = state.getBlock();
-        return block instanceof IFluidBlock || block instanceof BlockLiquid;
+        return DynamicLightsConfig.waterSensitiveCheck && FluidHandler.isFluid(entity);
     }
 
     public static int getLivingEntityLuminanceFromItems(EntityLivingBase entity) {
