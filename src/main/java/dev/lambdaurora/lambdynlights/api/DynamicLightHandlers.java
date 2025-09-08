@@ -9,6 +9,7 @@
 
 package dev.lambdaurora.lambdynlights.api;
 
+import net.minecraft.client.Minecraft;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.item.EntityItemFrame;
@@ -18,11 +19,10 @@ import net.minecraft.entity.monster.EntityEnderman;
 import net.minecraft.entity.monster.EntityMagmaCube;
 import net.minecraft.entity.projectile.EntitySpectralArrow;
 import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.math.BlockPos;
-import toni.sodiumdynamiclights.config.DynamicLightsConfig;
 import toni.sodiumdynamiclights.SodiumDynamicLights;
 import toni.sodiumdynamiclights.accessor.DynamicLightHandlerHolder;
-import net.minecraft.client.Minecraft;
+import toni.sodiumdynamiclights.config.DynamicLightsConfig;
+import toni.sodiumdynamiclights.util.FluidHandler;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -55,11 +55,7 @@ public final class DynamicLightHandlers {
 			return luminance;
 		});
 		registerEntityDynamicLightHandler(EntityItem.class, entity -> SodiumDynamicLights.getLuminanceFromItemStack(entity.getItem(), entity.isOverWater()));
-		registerEntityDynamicLightHandler(EntityItemFrame.class, entity -> {
-            BlockPos pos = new BlockPos(entity.posX, entity.posY + entity.getEyeHeight(), entity.posZ);
-			boolean isSubmerged = entity.world.getBlockState(pos).getMaterial().isLiquid();
-			return SodiumDynamicLights.getLuminanceFromItemStack(entity.getDisplayedItem(), isSubmerged);
-		});
+		registerEntityDynamicLightHandler(EntityItemFrame.class, entity -> SodiumDynamicLights.getLuminanceFromItemStack(entity.getDisplayedItem(), FluidHandler.isFluid(entity)));
 		registerEntityDynamicLightHandler(EntityMagmaCube.class, entity -> (entity.squishFactor > 0.6) ? 11 : 8);
 		registerEntityDynamicLightHandler(EntitySpectralArrow.class, entity -> 8);
 	}
@@ -245,7 +241,7 @@ public final class DynamicLightHandlers {
 		if (!canTileEntityLightUp(entity))
 			return 0;
 
-		if (handler.isWaterSensitive(entity) && entity.getWorld() != null && entity.getWorld().getBlockState(entity.getPos()).getMaterial().isLiquid())
+		if (handler.isWaterSensitive(entity) && entity.getWorld() != null && FluidHandler.isFluid(entity.getWorld(), entity.getPos()))
 			return 0;
 
 		return handler.getLuminance(entity);
