@@ -9,8 +9,11 @@
 
 package toni.sodiumdynamiclights;
 
-import net.minecraft.util.text.TextComponentTranslation;
 import net.minecraft.util.text.TextFormatting;
+import net.minecraftforge.fml.common.Loader;
+import org.embeddedt.embeddium.impl.gui.framework.TextComponent;
+import org.embeddedt.embeddium.impl.gui.framework.TextFormattingStyle;
+import org.embeddedt.embeddium.impl.gui.options.TextProvider;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Arrays;
@@ -23,19 +26,25 @@ import java.util.Optional;
  * @version 2.0.1
  * @since 1.0.0
  */
-public enum DynamicLightsMode {
+@net.minecraftforge.fml.common.Optional.Interface(
+		iface = "org.embeddedt.embeddium.impl.gui.options.TextProvider",
+		modid = "celeritas"
+)
+public enum DynamicLightsMode implements TextProvider {
 	OFF(0, TextFormatting.RED, "sodium.dynamiclights.options.value.off"),
 	SLOW(500, TextFormatting.YELLOW, "sodium.dynamiclights.options.value.slow"),
 	FAST(250, TextFormatting.GOLD, "sodium.dynamiclights.options.value.fast"),
 	REALTIME(0, TextFormatting.GREEN, "sodium.dynamiclights.options.value.realtime");
 
 	private final int delay;
-	private final TextComponentTranslation translationComponent;
+	private TextComponent localizedName;
 
 	DynamicLightsMode(int delay, @NotNull TextFormatting formatting, @NotNull String translationKey) {
 		this.delay = delay;
-		this.translationComponent = new TextComponentTranslation(translationKey);
-		this.translationComponent.getStyle().setColor(formatting);
+
+		if (Loader.isModLoaded("celeritas")) {
+			this.localizedName = TextComponent.translatable(translationKey).withStyle(TextFormattingStyle.valueOf(formatting.name()));
+		}
 	}
 
 	/**
@@ -78,15 +87,6 @@ public enum DynamicLightsMode {
 	}
 
 	/**
-	 * Returns the translation component of the dynamic lights mode.
-	 *
-	 * @return the translation component of the dynamic lights mode
-	 */
-	public @NotNull TextComponentTranslation getTranslationComponent() {
-		return this.translationComponent;
-	}
-
-	/**
 	 * Gets the dynamic lights mode from its ResourceLocation.
 	 *
 	 * @param id the ResourceLocation of the dynamic lights mode
@@ -98,5 +98,11 @@ public enum DynamicLightsMode {
 
 	public @NotNull String getName() {
 		return this.name().toLowerCase();
+	}
+
+	@Override
+	@net.minecraftforge.fml.common.Optional.Method(modid = "celeritas")
+	public @NotNull TextComponent getLocalizedName() {
+		return localizedName;
 	}
 }
