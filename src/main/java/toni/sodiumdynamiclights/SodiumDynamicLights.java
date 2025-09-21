@@ -34,6 +34,8 @@ import org.apache.logging.log4j.LogManager;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.apache.logging.log4j.Logger;
+import org.taumc.celeritas.api.OptionGUIConstructionEvent;
+import org.taumc.celeritas.api.eventbus.EmbeddiumEvent;
 import toni.sodiumdynamiclights.accessor.WorldRendererAccessor;
 import toni.sodiumdynamiclights.config.CeleritasOptionsListener;
 import toni.sodiumdynamiclights.config.ConfigEventHandler;
@@ -71,15 +73,14 @@ public class SodiumDynamicLights {
         if (Loader.isModLoaded("celeritas")) {
             try {
                 Class.forName("org.taumc.celeritas.api.OptionGUIConstructionEvent");
-                MinecraftForge.EVENT_BUS.register(CeleritasOptionsListener.class);
+                OptionGUIConstructionEvent.BUS.addListener(CeleritasOptionsListener::onCeleritasOptionsConstruct);
             } catch (Throwable t) {
-                if (t instanceof ClassNotFoundException) {
-                    LOGGER.error("Celeritas is not up-to-date, cannot insert options into Celeritas' video options menu.");
+                if (t instanceof NoClassDefFoundError) {
+                    LOGGER.error("Celeritas version is too old use 2.4.0 or newer");
                 } else {
-                    LOGGER.error("Unable to check if Celeritas is up-to-date.", t);
+                    LOGGER.error("Unable to check if Celeritas is up-to-date", t);
                 }
             }
-
         }
     }
 
@@ -154,7 +155,7 @@ public class SodiumDynamicLights {
      * @return the modified lightmap coordinates
      */
     public int getLightmapWithDynamicLight(Entity entity, int lightmap) {
-        int posLightlevel = (int) this.getDynamicLightLevel(new BlockPos(entity.posX,entity.posY,entity.posZ));
+        int posLightlevel = (int) this.getDynamicLightLevel(new BlockPos(entity.posX, entity.posY, entity.posZ));
         int entityLuminance = ((DynamicLightSource) entity).sdl$getLuminance();
 
         return getLightmapWithDynamicLight(Math.max(posLightlevel, entityLuminance), lightmap);
