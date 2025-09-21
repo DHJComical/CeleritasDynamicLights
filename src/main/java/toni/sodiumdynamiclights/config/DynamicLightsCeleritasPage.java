@@ -20,7 +20,7 @@ public class DynamicLightsCeleritasPage {
     public static OptionPage celeritasDynamicLights() {
         final List<OptionGroup> groups = new ArrayList<>();
 
-        final String MOD_NAME = "CeleritasDynamicLights";
+        final String MOD_NAME = "Celeritas Dynamic Lights";
 
         groups.add(OptionGroup.createBuilder()
                 .setId(OptionIdentifier.create(MOD_NAME, "common"))
@@ -29,7 +29,6 @@ public class DynamicLightsCeleritasPage {
                         .setName(TextComponent.translatable("sodium.dynamiclights.options.mode"))
                         .setTooltip(TextComponent.translatable("sodium.dynamiclights.options.mode.desc"))
                         .setControl(option -> new CyclingControl<>(option, DynamicLightsMode.class, new TextComponent[]{
-
                                 TextComponent.translatable(DynamicLightsMode.OFF.getTranslationComponent().getKey()),
                                 TextComponent.translatable(DynamicLightsMode.SLOW.getTranslationComponent().getKey()),
                                 TextComponent.translatable(DynamicLightsMode.FAST.getTranslationComponent().getKey()),
