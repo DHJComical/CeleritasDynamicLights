@@ -9,8 +9,11 @@
 
 package toni.sodiumdynamiclights;
 
-import net.minecraft.util.text.TextComponentTranslation;
 import net.minecraft.util.text.TextFormatting;
+import net.minecraftforge.fml.common.Loader;
+import org.embeddedt.embeddium.impl.gui.framework.TextComponent;
+import org.embeddedt.embeddium.impl.gui.framework.TextFormattingStyle;
+import org.embeddedt.embeddium.impl.gui.options.TextProvider;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Arrays;
@@ -23,16 +26,21 @@ import java.util.Optional;
  * @version 2.0.1
  * @since 1.2.1
  */
-public enum ExplosiveLightingMode {
+@net.minecraftforge.fml.common.Optional.Interface(
+		iface = "org.embeddedt.embeddium.impl.gui.options.TextProvider",
+		modid = "celeritas"
+)
+public enum ExplosiveLightingMode implements TextProvider {
 	OFF(TextFormatting.RED, "sodium.dynamiclights.options.value.off"),
 	SIMPLE(TextFormatting.YELLOW, "sodium.dynamiclights.options.value.simple"),
 	FANCY(TextFormatting.GREEN, "sodium.dynamiclights.options.value.fancy");
 
-	private final TextComponentTranslation translationComponent;
+	private TextComponent localizedName;
 
 	ExplosiveLightingMode(@NotNull TextFormatting formatting, @NotNull String translationKey) {
-		this.translationComponent = new TextComponentTranslation(translationKey);
-		this.translationComponent.getStyle().setColor(formatting);
+		if (Loader.isModLoaded("celeritas")) {
+			this.localizedName = TextComponent.translatable(translationKey).withStyle(TextFormattingStyle.valueOf(formatting.name()));
+		}
 	}
 
 	/**
@@ -57,16 +65,6 @@ public enum ExplosiveLightingMode {
 	}
 
 	/**
-	 * Returns the translation component of the explosives dynamic lighting mode.
-	 *
-	 * @return the translation component of the explosives dynamic lighting mode
-	 */
-	public @NotNull TextComponentTranslation getTranslationComponent() {
-		return this.translationComponent;
-	}
-
-
-	/**
 	 * Gets the explosives dynamic lighting mode from its ResourceLocation.
 	 *
 	 * @param id the ResourceLocation of the explosives dynamic lighting mode
@@ -78,5 +76,11 @@ public enum ExplosiveLightingMode {
 
 	public @NotNull String getName() {
 		return this.name().toLowerCase();
+	}
+
+	@Override
+	@net.minecraftforge.fml.common.Optional.Method(modid = "celeritas")
+	public @NotNull TextComponent getLocalizedName() {
+		return localizedName;
 	}
 }
